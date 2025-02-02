@@ -1,0 +1,181 @@
+﻿/* General */
+body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(180deg, #FFA500 0%, #FF8C00 50%, #FF4500 100%);
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 15px;
+}
+
+h3 {
+    text-align: center;
+    color: #FFA500;
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+}
+
+/* Búsqueda */
+input.form-control {
+    border-radius: 25px;
+    padding: 10px 20px;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+    input.form-control:focus {
+        outline: none;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+button.btn-add {
+    border-radius: 25px;
+    padding: 8px 20px;
+    background-color: #FF8C00;
+    border: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    color: white;
+}
+
+    button.btn-add:hover {
+        background-color: #FF4500;
+        transform: translateY(-2px);
+    }
+
+/* Tarjetas de autores */
+.card {
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+.card-img-top {
+    height: 210px;
+    object-fit: cover;
+}
+
+.card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #333;
+    background-color: #FFF5E1;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.card-text {
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+    .card-text strong {
+        color: #FF8C00;
+    }
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+}
+
+button.btn-primary, button.btn-danger {
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+    button.btn-primary:hover, button.btn-danger:hover {
+        transform: translateY(-2px);
+    }
+
+/* Modal */
+.modal-content {
+    border-radius: 10px;
+    background-color: #fff;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    background-color: #FF8C00;
+    color: white;
+    border-radius: 10px 10px 0 0;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.form-label {
+    font-weight: bold;
+}
+
+textarea.form-control, input.form-control {
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+    textarea.form-control:focus, input.form-control:focus {
+        border-color: #FF8C00;
+        box-shadow: 0 0 10px rgba(255, 140, 0, 0.2);
+    }
+
+.modal-footer {
+    background-color: #f9f9f9;
+    border-radius: 0 0 10px 10px;
+    display: flex;
+    justify-content: space-between; /* Distribuye los botones a los extremos */
+    align-items: center; /* Alinea verticalmente los botones */
+    padding: 10px;
+}
+
+button.btn-secondary, button.btn-primary {
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+button.btn-addd {
+    background-color: #FF8C00;
+    border: none;
+}
+
+    button.btn-add:hover {
+        background-color: #FF4500;
+    }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card {
+        width: 100%;
+    }
+
+    .author-list {
+        flex-direction: column;
+        align-items: center;
+    }
+}

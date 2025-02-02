@@ -1,0 +1,231 @@
+﻿@page "/listAuthors"
+
+@using Biblioteca.Data.Models
+@using Biblioteca.Business.Interfases
+@inject IJSRuntime JsRuntime
+@inject IAuthorRepository AuthorService
+@using System.ComponentModel.DataAnnotations
+
+<!-- Agregar Font Awesome para los iconos -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<div class="container mt-4">
+    <h3 class="text-center mb-4">Gestión Autores</h3>
+
+    <!-- Campo de búsqueda -->
+    <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Buscar autor..." @oninput="FiltrarAutores" />
+    </div>
+
+    <div class="text-end mb-3">
+        <button class="btn btn-add" @onclick="MostrarModal">
+            <i class="fas fa-plus"></i> Agregar Autor
+        </button>
+    </div>
+
+    @if (authors == null)
+    {
+        <p class="text-center">Cargando autores...</p>
+    }
+    else if (!authors.Any())
+    {
+        <p class="text-center">No hay autores disponibles.</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var author in filteredAuthors)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0" style="background-color: #f9f9f9; width: 18rem; border-radius: 10px;">
+                        <img src="@(!string.IsNullOrEmpty(author.Photo) ? author.Photo : "https://via.placeholder.com/150")"
+                             class="card-img-top"
+                             alt="Foto de @author.Name"
+                             style="height: 200px; object-fit: cover; border-top-left-radius: 10px; border-top-right-radius: 10px;" />
+                        <div class="card-body d-flex flex-column" style="color: #333;">
+                            <h5 class="card-title text-dark">@author.Name</h5>
+                            <p class="card-text mb-1"><strong>Edad:</strong> @author.Age</p>
+                            <p class="card-text flex-grow-1" style="font-size: 0.9rem;"><strong>Biografía:</strong> @author.Biography</p>
+                            <div class="d-flex justify-content-between mt-3">
+                                <button class="btn btn-primary btn-sm fw-bold" @onclick="() => EditarAutor(author.Id_Author)">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button class="btn btn-danger btn-sm fw-bold" @onclick="() => EliminarAutor(author.Id_Author)">
+                                    <i class="fas fa-trash-alt"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Modal -->
+    @if (mostrarModal)
+    {
+        <div class="modal show d-block" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header" >
+                        <h5 class="modal-title">@((esEdicion ? "Editar Autor" : "Agregar Autor"))</h5>
+                        <button type="button" class="btn-close" @onclick="CerrarModal" style="filter: invert(1);"></button>
+                    </div>
+                    <div class="modal-body">
+                        <EditForm Model="nuevoAutor" OnValidSubmit="GuardarAutor">
+                            <DataAnnotationsValidator />
+
+                            <div class="mb-3">
+                                <label for="idAuthor" class="form-label">ID</label>
+                                <input type="text" id="idAuthor" class="form-control" @bind="nuevoAutor.Id_Author" readonly="@esEdicion" required />
+                                <ValidationMessage For="@(() => nuevoAutor.Name)" />
+
+                            </div>
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nombre</label>
+                                <input type="text" id="name" class="form-control" @bind="nuevoAutor.Name" required />
+                                <ValidationMessage For="@(() => nuevoAutor.Name)" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="age" class="form-label">Edad</label>
+                                <input type="number" id="age" class="form-control" @bind="nuevoAutor.Age" min="1" required />
+                                <ValidationMessage For="@(() => nuevoAutor.Age)" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="biography" class="form-label">Biografía</label>
+                                <textarea id="biography" class="form-control" @bind="nuevoAutor.Biography" required></textarea>
+                                <ValidationMessage For="@(() => nuevoAutor.Biography)" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="photo" class="form-label">URL de Foto</label>
+                                <input type="text" id="photo" class="form-control" @bind="nuevoAutor.Photo" />
+                                <ValidationMessage For="@(() => nuevoAutor.Photo)" />
+
+                            </div>
+
+                            <div class="modal-footer" >
+                                <button class="btn btn-primary" type="submit">@((esEdicion ? "Guardar Cambios" : "Guardar"))</button>
+                                <button class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private IEnumerable<Author> authors;
+    private IEnumerable<Author> filteredAuthors; // Lista filtrada
+    private string searchTerm = string.Empty;   // Término de búsqueda
+    private Author nuevoAutor = new Author();
+    private bool mostrarModal = false;
+    private bool esEdicion = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarAutores();
+    }
+
+    private async Task CargarAutores()
+    {
+        authors = await AuthorService.GetAlLAsync();
+        filteredAuthors = authors; // Inicialmente muestra todos los autores
+    }
+
+    private void FiltrarAutores(ChangeEventArgs evt)
+    {
+        searchTerm = evt.Value.ToString();
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            filteredAuthors = authors; // Si no hay búsqueda, muestra todos los autores
+        }
+        else
+        {
+            filteredAuthors = authors.Where(a =>
+            a.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+            a.Age.ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase) == true ||
+            a.Id_Author.ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+
+        }
+    }
+
+    private void MostrarModal()
+    {
+        esEdicion = false;
+        nuevoAutor = new Author(); // Resetea el formulario
+        mostrarModal = true;
+    }
+
+    private async Task EditarAutor(string idAuthor)
+    {
+        var author = await AuthorService.GetByIdAsyns(idAuthor);
+
+        if (author != null)
+        {
+            nuevoAutor = author;
+            esEdicion = true;
+            mostrarModal = true;
+        }
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+    }
+
+    private async Task GuardarAutor()
+    {
+        // Validar si el ID del autor ya existe antes de agregarlo
+        if (!esEdicion && authors.Any(a => a.Id_Author == nuevoAutor.Id_Author))
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "El ID del autor ya existe. Introduzca un ID diferente.");
+            return;
+        }
+
+        // Asigna una imagen predeterminada si no se proporciona una foto
+        if (string.IsNullOrEmpty(nuevoAutor.Photo))
+        {
+            nuevoAutor.Photo = "https://via.placeholder.com/150";
+        }
+
+        if (!string.IsNullOrWhiteSpace(nuevoAutor.Name) && nuevoAutor.Age > 0)
+        {
+            if (esEdicion)
+            {
+                await AuthorService.UpdateAuthorAsync(nuevoAutor);
+            }
+            else
+            {
+                await AuthorService.AddAuthorAdsync(nuevoAutor);
+            }
+
+            await CargarAutores();
+            CerrarModal();
+        }
+    }
+
+
+    private async Task EliminarAutor(string idAuthor)
+    {
+        var isLinked = await AuthorService.IsAuthorLinkedToBooksAsync(idAuthor);
+
+        if (isLinked)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "No se puede eliminar este autor porque está relacionado con un libro.");
+        }
+        else
+        {
+            var confirm = await JsRuntime.InvokeAsync<bool>("confirm", $"¿Estás seguro de que deseas eliminar este autor?");
+            if (confirm)
+            {
+                await AuthorService.DeleteAuthorAsync(idAuthor);
+                await CargarAutores();
+            }
+        }
+    }
+}

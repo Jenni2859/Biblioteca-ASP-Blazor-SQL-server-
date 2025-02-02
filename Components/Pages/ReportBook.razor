@@ -1,0 +1,55 @@
+﻿@page "/ver-reporte"
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+<script src="/js/site.js"></script>
+
+<style>
+    .pdf-container {
+        width: 100%;
+        height: 80vh;
+        border: 1px solid #ccc;
+    }
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        display: none;
+    }
+
+    .btn-descargar {
+        background-color: #FFA500;
+        font-size: 20;
+        color: white;
+    }
+</style>
+
+<h3>Reporte de Libros</h3>
+
+<div class="pdf-container">
+    <p id="loadingMessage">Cargando reporte...</p>
+    <iframe id="pdfViewer" frameborder="0"></iframe>
+</div>
+
+<button @onclick="DescargarReporte" class="btn btn-descargar mt-3">
+    <i class="fa fa-download"></i> Descargar Reporte
+</button>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var pdfUrl = $"{Navigation.BaseUri}api/reports/ver";
+            await JS.InvokeVoidAsync("loadPdf", "pdfViewer", "loadingMessage", pdfUrl);
+        }
+    }
+
+    private async Task DescargarReporte()
+    {
+        // Obtiene la URL del reporte
+        var pdfUrl = $"{Navigation.BaseUri}api/reports/descargar";
+
+        // Usa JS Interop para hacer una solicitud de descarga del archivo PDF
+        await JS.InvokeVoidAsync("downloadFile", pdfUrl);
+    }
+}
