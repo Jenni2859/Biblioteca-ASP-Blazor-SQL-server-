@@ -2,6 +2,7 @@
 using Biblioteca.Data;
 using Biblioteca.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Biblioteca.Business.Repositories
 {
@@ -30,16 +31,16 @@ namespace Biblioteca.Business.Repositories
            var author = await _context.Authors.FindAsync(id);
            if (author != null)
            {
-                _context.Authors.Remove(author);
+                author.Status = Status.Inactivo; // Cambiamos el estado a inactivo en lugar de eliminar
                 await _context.SaveChangesAsync();
 
-           }
+            }
 
         }
 
         public async Task<IEnumerable<Author>> GetAlLAsync()
         {
-            return await _context.Authors.Include(b => b.Books).AsNoTracking().ToListAsync();
+            return await _context.Authors.Include(a => a.Books).AsNoTracking().ToListAsync();
         }
 
         public async Task<Author> GetByIdAsyns(string id)

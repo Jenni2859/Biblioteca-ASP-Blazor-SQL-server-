@@ -1,7 +1,7 @@
 ﻿/* General */
 body {
-    font-family: 'Roboto', sans-serif;
-    background: linear-gradient(180deg, #FFA500 0%, #FF8C00 50%, #FF4500 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(180deg, #005f73 0%, #0a9396 50%, #94d2bd 100%);
     color: #333;
     margin: 0;
     padding: 0;
@@ -15,7 +15,7 @@ body {
 
 h3 {
     text-align: center;
-    color: #FFA500;
+    color: #ffffff; /* Usando un color claro para el título */
     font-size: 2.5rem;
     margin-bottom: 30px;
 }
@@ -37,7 +37,7 @@ input.form-control {
 button.btn-add {
     border-radius: 25px;
     padding: 8px 20px;
-    background-color: #FF8C00;
+    background-color: #0a9396; /* Color coherente con el esquema */
     border: none;
     font-weight: bold;
     transition: all 0.3s ease;
@@ -45,15 +45,15 @@ button.btn-add {
 }
 
     button.btn-add:hover {
-        background-color: #FF4500;
+        background-color: #005f73;
         transform: translateY(-2px);
     }
 
 /* Tarjetas de libros */
 .card {
-    background-color: #ffffff;
+    background-color: #e0e1dd; /* Cambiar el fondo de la tarjeta */
     border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
     overflow: hidden;
     margin-bottom: 20px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -61,36 +61,44 @@ button.btn-add {
 
     .card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3); /* Mayor sombra en hover */
     }
+
+.card-img-top {
+    height: 210px;
+    object-fit: cover;
+}
 
 .card-body {
     padding: 20px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    color: #333;
-    background-color: #FFF5E1; /* Fondo más visible */
+    color: #444; /* Cambiar el color del texto */
+    background-color: #f4f4f4; /* Fondo más suave para el contenido */
 }
 
 .card-title {
     font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: 10px;
+    color: #005f73; /* Color del título */
 }
 
 .card-text {
     font-size: 1rem;
     margin-bottom: 10px;
+    color: #333; /* Color del texto */
 }
 
     .card-text strong {
-        color: #FF8C00;
+        color: #0a9396; /* Color coherente con los colores */
     }
 
 .card-footer {
     display: flex;
     justify-content: space-between;
+    background-color: #e0e1dd; /* Fondo del pie de la tarjeta */
 }
 
 button.btn-primary, button.btn-danger {
@@ -107,13 +115,13 @@ button.btn-primary, button.btn-danger {
 /* Modal */
 .modal-content {
     border-radius: 10px;
-    background-color: #fff;
+    background-color: #ffffff;
     border: none;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .modal-header {
-    background-color: #FF8C00;
+    background-color: #0a9396;
     color: white;
     border-radius: 10px 10px 0 0;
 }
@@ -134,16 +142,16 @@ textarea.form-control, input.form-control {
 }
 
     textarea.form-control:focus, input.form-control:focus {
-        border-color: #FF8C00;
-        box-shadow: 0 0 10px rgba(255, 140, 0, 0.2);
+        border-color: #0a9396;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     }
 
 .modal-footer {
     background-color: #f9f9f9;
     border-radius: 0 0 10px 10px;
     display: flex;
-    justify-content: space-between; /* Distribuye los botones a los extremos */
-    align-items: center; /* Alinea verticalmente los botones */
+    justify-content: space-between;
+    align-items: center;
     padding: 10px;
 }
 
@@ -154,13 +162,13 @@ button.btn-secondary, button.btn-primary {
     font-size: 1rem;
 }
 
-button.btn-add {
-    background-color: #FF8C00;
+button.btn-addd {
+    background-color: #0a9396;
     border: none;
 }
 
-    button.btn-add:hover {
-        background-color: #FF4500;
+    button.btn-addd:hover {
+        background-color: #005f73;
     }
 
 /* Responsive */
@@ -174,3 +182,78 @@ button.btn-add {
         align-items: center;
     }
 }
+
+/* Estilos para el contenedor "Ordenar por" */
+.mb-3.d-flex {
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.form-label {
+    font-weight: bold;
+    color: #333;
+    margin-right: 10px;
+}
+
+/* Estilo del select */
+.select-control {
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    color: #333;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .select-control:hover {
+        border-color: #0a9396;
+    }
+
+    .select-control:focus {
+        outline: none;
+        box-shadow: 0 0 5px rgba(10, 147, 150, 0.5);
+        border-color: #0a9396;
+    }
+
+/* Diseño para la sección "Ordenar por" en pantallas pequeñas */
+@media (max-width: 768px) {
+    .card {
+        width: 100%;
+    }
+
+    .author-list {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .mb-3.d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Contenedor para ordenar */
+.sort-container {
+    position: relative;
+    right: 0;
+    width: 20%;
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+    /* Estilo para el contenedor "Ordenar por" */
+    .sort-container select.form-select {
+        border-radius: 20px;
+        padding: 10px 15px;
+        background-color: #f1f1f1;
+        border: 1px solid #ddd;
+        width: 200px;
+    }
+
+        .sort-container select.form-select:focus {
+            background-color: #ffffff;
+            border-color: #007bff;
+        }
+

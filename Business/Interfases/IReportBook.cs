@@ -2,6 +2,7 @@
 {
     public interface IReportBook
     {
-        Task<byte[]> GenerarReporteAsync();
+        Task<byte[]> GenerarReporteLibroAsync();
+        
     }
 }

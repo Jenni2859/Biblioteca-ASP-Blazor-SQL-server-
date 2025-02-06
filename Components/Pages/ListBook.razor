@@ -1,10 +1,12 @@
 ﻿@page "/listBooks"
 
+@using Biblioteca.Business.Interfaces
 @using Biblioteca.Data.Models
 @using Biblioteca.Business.Interfases
 @inject IJSRuntime JsRuntime
 @inject IAuthorRepository AuthorService
 @inject IBookRepository BookService
+@inject ICategoryRepository CategoryService
 
 <!-- Agregar Font Awesome para los iconos -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
@@ -22,8 +24,18 @@
     <!-- Botón para agregar un libro -->
     <div class="text-end mb-3">
         <button class="btn btn-add" @onclick="MostrarModal">
-             <i class="fas fa-plus"></i> Agregar Libro
+            <i class="fas fa-plus"></i> Agregar Libro
         </button>
+    </div>
+
+    <!-- Contenedor de "Ordenar por" alineado a la derecha -->
+    <div class="mb-3 d-flex justify-content-end align-items-center sort-container">
+        <select id="orderBy" class="form-select" @onchange="OrdenarLibros">
+            <option value="Nombre">Orden Alfabético</option>
+            <option value="Cedula">Por Cédula</option>
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+        </select>
     </div>
 
     @if (books == null)
@@ -67,10 +79,10 @@
     <!-- Modal -->
     @if (mostrarModal)
     {
-        <div class="modal show d-block" >
+        <div class="modal show d-block">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header" >
+                    <div class="modal-header">
                         <h5 class="modal-title">@((esEdicion ? "Editar" : "Agregar") + " Libro")</h5>
                         <button type="button" class="btn-close" @onclick="CerrarModal" style="filter: invert(1);"></button>
                     </div>
@@ -82,36 +94,35 @@
                                 <label for="idBook" class="form-label">ID</label>
                                 <input type="text" id="idBook" class="form-control" @bind="nuevoLibro.Id_Book" disabled="@esEdicion" required />
                                 <ValidationMessage For="@(() => nuevoLibro.Id_Book)" />
-
                             </div>
                             <div class="mb-3">
                                 <label for="title" class="form-label">Título</label>
-                                <InputText id="title" class="form-control" @bind-Value="nuevoLibro.Title" />
+                                <InputText id="title" class="form-control" @bind-Value="nuevoLibro.Title" required />
                                 <ValidationMessage For="@(() => nuevoLibro.Title)" />
                             </div>
                             <div class="mb-3">
                                 <label for="pages" class="form-label">Páginas</label>
-                                <InputNumber id="pages" class="form-control" @bind-Value="nuevoLibro.Pages" />
+                                <InputNumber id="pages" class="form-control" @bind-Value="nuevoLibro.Pages" required />
                                 <ValidationMessage For="@(() => nuevoLibro.Pages)" />
                             </div>
                             <div class="mb-3">
                                 <label for="price" class="form-label">Precio</label>
-                                <InputNumber id="price" class="form-control" @bind-Value="nuevoLibro.Price" />
+                                <InputNumber id="price" class="form-control" @bind-Value="nuevoLibro.Price" required />
                                 <ValidationMessage For="@(() => nuevoLibro.Price)" />
                             </div>
                             <div class="mb-3">
                                 <label for="editionDate" class="form-label">Fecha de Edición</label>
-                                <InputDate id="editionDate" class="form-control" @bind-Value="nuevoLibro.Edition_Date" />
+                                <InputDate id="editionDate" class="form-control" @bind-Value="nuevoLibro.Edition_Date" required />
                                 <ValidationMessage For="@(() => nuevoLibro.Edition_Date)" />
                             </div>
                             <div class="mb-3">
                                 <label for="stock" class="form-label">Stock</label>
-                                <InputNumber id="stock" class="form-control" @bind-Value="nuevoLibro.Stock" />
+                                <InputNumber id="stock" class="form-control" @bind-Value="nuevoLibro.Stock" required />
                                 <ValidationMessage For="@(() => nuevoLibro.Stock)" />
                             </div>
                             <div class="mb-3">
                                 <label for="idAuthor" class="form-label">Autor</label>
-                                <select id="idAuthor" class="form-select" @bind="nuevoLibro.Id_Author">
+                                <select id="idAuthor" class="form-select" @bind="nuevoLibro.Id_Author" required>
                                     <option value="">Seleccione un autor</option>
                                     @foreach (var author in authors)
                                     {
@@ -120,14 +131,23 @@
                                 </select>
                                 <ValidationMessage For="@(() => nuevoLibro.Id_Author)" />
                             </div>
+                            <div class="mb-3">
+                                <label for="categoryId" class="form-label">Categoría</label>
+                                <select id="categoryId" class="form-select" @bind="nuevoLibro.CategoryId" required>
+                                    <option value="">Seleccione una categoría</option>
+                                    @foreach (var category in categories)
+                                    {
+                                        <option value="@category.Id_Category">@category.Name</option>
+                                    }
+                                </select>
+                                <ValidationMessage For="@(() => nuevoLibro.CategoryId)" />
+                            </div>
 
-                            <div class="modal-footer" >
+                            <div class="modal-footer">
                                 <button class="btn btn-primary" type="submit">Guardar</button>
                                 <button class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
-
                             </div>
                         </EditForm>
-
                     </div>
                 </div>
             </div>
@@ -141,6 +161,7 @@
     private IEnumerable<Book> books;
     private IEnumerable<Author> authors;
     private IEnumerable<Book> filteredBooks;
+    private IEnumerable<Category> categories;
     private Book nuevoLibro = new Book();
     private bool mostrarModal = false;
     private bool esEdicion = false;
@@ -150,6 +171,7 @@
     {
         await CargarLibros();
         await CargarAutores();
+        await CargarCategorias();
         nuevoLibro.Edition_Date = DateTime.Now;
     }
 
@@ -162,6 +184,11 @@
     private async Task CargarAutores()
     {
         authors = await AuthorService.GetAlLAsync();
+    }
+
+    private async Task CargarCategorias()
+    {
+        categories = await CategoryService.GetAllAsync();
     }
 
     private void MostrarModal()
@@ -189,7 +216,8 @@
             !string.IsNullOrWhiteSpace(nuevoLibro.Title) &&
             nuevoLibro.Pages > 0 &&
             nuevoLibro.Price > 0 &&
-            !string.IsNullOrWhiteSpace(nuevoLibro.Id_Author))
+            !string.IsNullOrWhiteSpace(nuevoLibro.Id_Author) &&
+            nuevoLibro.CategoryId > 0)
         {
             if (esEdicion)
             {
@@ -245,7 +273,27 @@
             book.Stock.ToString().Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
             book.Id_Book.ToString().Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
             book.Price.ToString().Contains(busqueda, StringComparison.OrdinalIgnoreCase));
+        }
+    }
 
+    // Método para ordenar libros
+    private void OrdenarLibros(ChangeEventArgs evt)
+    {
+        var criterio = evt.Value.ToString();
+        switch (criterio)
+        {
+            case "Nombre":
+                filteredBooks = filteredBooks.OrderBy(b => b.Title);
+                break;
+            case "Cedula":
+                filteredBooks = filteredBooks.OrderBy(b => b.Id_Book);
+                break;
+            case "Activo":
+                filteredBooks = filteredBooks.OrderBy(b => b.Stock > 0); // Ejemplo de criterio activo/inactivo
+                break;
+            case "Inactivo":
+                filteredBooks = filteredBooks.OrderBy(b => b.Stock == 0); // Ejemplo de criterio activo/inactivo
+                break;
         }
     }
 }

@@ -26,5 +26,8 @@ namespace Biblioteca.Data.Models
 
         // Relación con Book
         public ICollection<Book> Books { get; set; } = new List<Book>();
+
+        // Propiedad de estado para indicar si el autor está activo o inactivo
+        public Status Status { get; set; } = Status.Activo;
     }
 }

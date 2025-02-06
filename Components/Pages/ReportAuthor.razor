@@ -1,0 +1,188 @@
+﻿@page "/ver-reporte-autor"
+@using Biblioteca.Business.Interfases
+@using Biblioteca.Data.Models
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject IAuthorRepository AuthorRepository
+<script src="/js/site.js"></script>
+
+<style>
+    .pdf-container {
+        width: 100%;
+        height: 80vh;
+        border: 1px solid #ccc;
+        margin-top: 20px;
+    }
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        display: none;
+    }
+
+    .btn-descargar {
+        background-color: #FFA500;
+        font-size: 20px;
+        color: white;
+    }
+
+    .btn-generar {
+        background-color: #28a745;
+        font-size: 20px;
+        color: white;
+    }
+
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        width: 400px;
+    }
+
+    .modal.show {
+        display: flex;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+</style>
+
+<h3>Reporte de Libros por Autor</h3>
+
+<!-- Botón para abrir el modal -->
+<button class="btn btn-generar" @onclick="AbrirModal">Nuevo Reporte </button>
+
+<!-- Modal para seleccionar el autor -->
+<div class="modal @modalClass">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Lista Autores</h2>
+            <span class="close" @onclick="CerrarModal">&times;</span>
+        </div>
+
+        <EditForm Model="searchCriteria" OnValidSubmit="GenerarReporteAutor">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <select id="authorId" class="form-control" @bind="searchCriteria.AuthorId">
+                    <option value="">Selecciona un autor</option>
+                    @foreach (var author in authors)
+                    {
+                        <option value="@author.Id_Author">@author.Name</option>
+                    }
+                </select>
+                <button type="submit" class="btn btn-generar mt-3">Generar Reporte</button>
+            </div>
+
+        </EditForm>
+    </div>
+</div>
+
+<div class=@mostrarReporte>
+
+    <div class=@($"pdf-container ")>
+        <p id="loadingMessage">Cargando reporte...</p>
+        <iframe id="pdfViewer" frameborder="0"></iframe>
+    
+    </div>
+    <button @onclick="DescargarReporte" class="btn btn-descargar mt-3">
+        <i class="fa fa-download"></i> Descargar Reporte
+    </button>
+</div>
+
+
+@code {
+    
+    private ReportCriteria searchCriteria = new ReportCriteria();
+    private List<Author> authors = new List<Author>();
+    private string pdfUrl;
+    private string mostrarReporte = " d-none"; // Variable para mostrar el reporte
+    private string modalClass = ""; // Controla la visibilidad del modal
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtener los autores desde el repositorio usando la interfaz IAuthorRepository
+        authors = (await AuthorRepository.GetAlLAsync()).ToList();
+    }
+
+    private void AbrirModal()
+    {
+        modalClass = "show"; // Muestra el modal
+    }
+
+    private void CerrarModal()
+    {
+        modalClass = ""; // Oculta el modal
+    }
+
+    private async Task GenerarReporteAutor()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(searchCriteria.AuthorId))
+            {
+                // Se debe seleccionar un autor
+                return;
+            }
+            mostrarReporte = ""; // Ocultar el formulario y mostrar el reporte
+
+
+            // Construir la URL con el parámetro de authorId
+            pdfUrl = $"{Navigation.BaseUri}api/reports/ver-libros-autor?authorId={searchCriteria.AuthorId}";
+
+            // Usar JS Interop para cargar el PDF
+            await JS.InvokeVoidAsync("loadPdf", "pdfViewer", "loadingMessage", pdfUrl);
+
+            // Esperar que el PDF se haya cargado antes de ocultar el formulario
+            CerrarModal(); // Cerrar el modal
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private async Task DescargarReporte()
+    {
+        if (string.IsNullOrEmpty(searchCriteria.AuthorId))
+        {
+            // Se debe seleccionar un autor
+            return;
+        }
+
+        // Obtener la URL para descargar el reporte
+        var url = $"{Navigation.BaseUri}api/reports/descargar-libros-autor?authorId={searchCriteria.AuthorId}";
+
+        // Usar JS Interop para hacer la solicitud de descarga del archivo PDF
+        await JS.InvokeVoidAsync("downloadFile", url);
+    }
+
+    public class ReportCriteria
+    {
+        public string AuthorId { get; set; }
+    }
+}

@@ -4,6 +4,7 @@ using Biblioteca.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Biblioteca.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250204193059_MigrationInitial")]
+    partial class MigrationInitial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -145,6 +148,10 @@ namespace Biblioteca.Migrations
                     b.Property<DateTime?>("ActualReturnDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("BookId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<DateTime>("LoanDate")
                         .HasColumnType("datetime2");
 
@@ -162,6 +169,8 @@ namespace Biblioteca.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id_Loan");
+
+                    b.HasIndex("BookId");
 
                     b.HasIndex("PersonId");
 
@@ -181,9 +190,6 @@ namespace Biblioteca.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("LoanId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.HasKey("Id_LoanDetail");
@@ -361,11 +367,19 @@ namespace Biblioteca.Migrations
 
             modelBuilder.Entity("Biblioteca.Data.Models.Loan", b =>
                 {
+                    b.HasOne("Biblioteca.Data.Models.Book", "Book")
+                        .WithMany()
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Biblioteca.Data.Models.Person", "Person")
                         .WithMany("Loans")
                         .HasForeignKey("PersonId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Book");
 
                     b.Navigation("Person");
                 });

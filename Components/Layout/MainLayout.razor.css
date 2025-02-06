@@ -1,3 +1,4 @@
+
 .page {
     position: relative;
     display: flex;
@@ -9,16 +10,20 @@ main {
 }
 
 .sidebar {
-    background-image: linear-gradient(180deg, #FFA500 0%, #FF8C00 50%, #FF4500 100%);
+    background-image: linear-gradient(180deg, #005f73 0%, #0a9396 50%, #94d2bd 100%);
+    color: white;
+    padding: 1rem;
+    box-shadow: 5px 0 5px rgba(0, 0, 0, 0.1); /* Sombra suave en lugar de borde */
 }
 
 .top-row {
     background-color: #f7f7f7;
     border-bottom: 1px solid #d6d5d5;
     justify-content: flex-end;
-    height: 3.9rem;
+    height: 4.7rem;
     display: flex;
     align-items: center;
+
 }
 
     .top-row ::deep a, .top-row ::deep .btn-link {
@@ -27,23 +32,23 @@ main {
         text-decoration: none;
     }
 
-    .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
-        text-decoration: underline;
-    }
+        .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
+            text-decoration: underline;
+        }
 
-    .top-row ::deep a:first-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
+        .top-row ::deep a:first-child {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
 @media (max-width: 640.98px) {
     .top-row {
         justify-content: space-between;
     }
 
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        margin-left: 0;
-    }
+        .top-row ::deep a, .top-row ::deep .btn-link {
+            margin-left: 0;
+        }
 }
 
 @media (min-width: 641px) {
@@ -64,11 +69,11 @@ main {
         z-index: 1;
     }
 
-    .top-row.auth ::deep a:first-child {
-        flex: 1;
-        text-align: right;
-        width: 0;
-    }
+        .top-row.auth ::deep a:first-child {
+            flex: 1;
+            text-align: right;
+            width: 0;
+        }
 
     .top-row, article {
         padding-left: 2rem !important;
@@ -96,3 +101,11 @@ main {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+.image-library {
+    max-width: 150px; /* Ajusta el tamaño máximo según sea necesario */
+    height: 4rem; /* Mantiene la proporción de la imagen */
+    display: block; /* Asegura que no haya espacios extra alrededor */
+    margin: 0 auto; /* Centra la imagen horizontalmente si es necesario */
+}
+

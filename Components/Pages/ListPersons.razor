@@ -1,0 +1,318 @@
+﻿@page "/listPersons"
+
+@using Biblioteca.Data.Models
+@using Biblioteca.Business.Interfaces
+@inject IJSRuntime JsRuntime
+@inject IPersonRepository PersonService
+@inject IUserRepository UserService
+@using System.ComponentModel.DataAnnotations
+
+<!-- Agregar Font Awesome para los iconos -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<div class="container mt-4">
+    <h3 class="text-center mb-4">Gestión de Personas</h3>
+
+    <!-- Campo de búsqueda -->
+    <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Buscar persona..." @oninput="FiltrarPersonas" />
+    </div>
+
+    <!-- Campo de agregar -->
+    <div class="text-end mb-3">
+        <button class="btn btn-add" @onclick="MostrarModal">
+            <i class="fas fa-plus"></i> Agregar Persona
+        </button>
+    </div>
+
+    <!-- Contenedor de "Ordenar por" alineado a la derecha -->
+    <div class="mb-3 d-flex justify-content-end align-items-center sort-container">
+        <select id="orderBy" class="form-select" @onchange="OrdenarPersonas">
+            <option value="Nombre">Orden Alfabético</option>
+            <option value="Cedula">Por Cédula</option>
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+        </select>
+    </div>
+
+    @if (personas == null)
+    {
+        <p class="text-center">Cargando personas...</p>
+    }
+    else if (!personas.Any())
+    {
+        <p class="text-center">No hay personas disponibles.</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var persona in filteredPersonas)
+            {
+                <div class="col-md-4 mb-3">
+                    <div class="card shadow-sm border-0" style="background-color: #f9f9f9; border-radius: 10px;">
+                        <div class="card-body d-flex align-items-center" style="cursor: pointer;" >
+                            <i class="fas fa-user-circle fa-3x text-primary me-3" @onclick="() => MostrarDetalles(persona)" title="Haz clic para más información"></i>
+                            <div>
+                                <h5 class="mb-0 text-dark">@persona.FullName</h5>
+                                <p class="text-muted mb-0"><i class="fas fa-phone"></i> @persona.PhoneNumber</p>
+                            </div>
+                            <div class="d-flex justify-content-between mt-3">
+                                <button class="btn btn-primary btn-sm fw-bold" @onclick="() => EditarPersona(persona.Id_Person)">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button class="btn btn-danger btn-sm fw-bold" @onclick="() => EliminarPersona(persona.Id_Person)">
+                                    <i class="fas fa-trash-alt"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Modal -->
+    @if (mostrarModal)
+    {
+        <div class="modal show d-block" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@((esEdicion ? "Editar Persona" : "Agregar Persona"))</h5>
+                        <button type="button" class="btn-close" @onclick="CerrarModal" style="filter: invert(1);"></button>
+                    </div>
+                    <div class="modal-body">
+                        <EditForm Model="nuevaPersona" OnValidSubmit="GuardarPersona">
+                            <DataAnnotationsValidator />
+
+                            <div class="mb-3">
+                                <label for="idPersona" class="form-label">Cédula</label>
+                                <input type="text" id="idPersona" class="form-control" @bind="nuevaPersona.Id_Person" readonly="@esEdicion" required />
+                                <ValidationMessage For="@(() => nuevaPersona.Id_Person)" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="fullName" class="form-label">Nombre Completo</label>
+                                <input type="text" id="fullName" class="form-control" @bind="nuevaPersona.FullName" required />
+                                <ValidationMessage For="@(() => nuevaPersona.FullName)" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Correo Electrónico</label>
+                                <input type="email" id="email" class="form-control" @bind="nuevaPersona.Email" required />
+                                <ValidationMessage For="@(() => nuevaPersona.Email)" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Teléfono</label>
+                                <input type="text" id="phone" class="form-control" @bind="nuevaPersona.PhoneNumber" />
+                                <ValidationMessage For="@(() => nuevaPersona.PhoneNumber)" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="address" class="form-label">Dirección</label>
+                                <input type="text" id="address" class="form-control" @bind="nuevaPersona.Address" />
+                                <ValidationMessage For="@(() => nuevaPersona.Address)" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="personType" class="form-label">Tipo de Persona</label>
+                                <select id="personType" class="form-control" @bind="nuevaPersona.PersonTypeId">
+                                    <option value="0">Estudiante</option>
+                                    <option value="1">Profesor</option>
+                                    <option value="2">Otro</option>
+                                </select>
+                                <ValidationMessage For="@(() => nuevaPersona.PersonTypeId)" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Estado</label>
+                                <select id="status" class="form-control" @bind="nuevaPersona.Status">
+                                    <option value="Activo">Activo</option>
+                                    <option value="Inactivo">Inactivo</option>
+                                </select>
+                                <ValidationMessage For="@(() => nuevaPersona.Status)" />
+                            </div>
+
+                            <!-- Sección de Usuario -->
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Contraseña</label>
+                                <input type="password" id="password" class="form-control" @bind="nuevoUsuario.Password" required />
+                                <ValidationMessage For="@(() => nuevoUsuario.Password)" />
+                            </div>
+
+                            <div class="modal-footer">
+                                <button class="btn btn-primary" type="submit">@((esEdicion ? "Guardar Cambios" : "Guardar"))</button>
+                                <button class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Modal para mostrar detalles de la persona -->
+    @if (mostrarDetalles)
+    {
+        <div class="modal show d-block" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Detalles del Contacto</h5>
+                        <button type="button" class="btn-close" @onclick="CerrarDetalles" style="filter: invert(1);"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Nombre:</strong> @nuevaPersona.FullName</p>
+                        <p><strong>Cédula:</strong> @nuevaPersona.Id_Person</p>
+                        <p><strong>Correo:</strong> @nuevaPersona.Email</p>
+                        <p><strong>Teléfono:</strong> @nuevaPersona.PhoneNumber</p>
+                        <p><strong>Dirección:</strong> @nuevaPersona.Address</p>
+                        <p><strong>Estado:</strong> @(nuevaPersona.Status == Status.Activo ? "Activo" : "Inactivo")</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CerrarDetalles">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+    private IEnumerable<Person> personas;
+    private IEnumerable<Person> filteredPersonas; // Lista filtrada
+    private IEnumerable<Person> Global; // Lista filtrada para buscar
+    private string searchTerm = string.Empty;   // Término de búsqueda
+    private Person nuevaPersona = new Person();
+    private User nuevoUsuario = new User();
+    private bool mostrarModal = false;
+    private bool mostrarDetalles = false;
+    private bool esEdicion = false;
+    private string ordenPor = "Activo"; // Orden por defecto
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarPersonas();
+    }
+
+    private async Task CargarPersonas()
+    {
+        personas = await PersonService.GetAllAsync();
+        Global = personas; // Inicialmente muestra todas las personas
+        OrdenarPersonas(null);
+    }
+
+    private void FiltrarPersonas(ChangeEventArgs evt)
+    {
+        searchTerm = evt.Value.ToString();
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            Global = personas; // Si no hay búsqueda, muestra todas las personas
+        }
+        else
+        {
+            Global = personas.Where(p =>
+            p.FullName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+            p.Id_Person.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) == true ||
+            p.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+            p.PhoneNumber != null && p.PhoneNumber.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+        }
+
+        OrdenarPersonas(null);
+    }
+
+    private void OrdenarPersonas(ChangeEventArgs evt)
+    {
+        if (evt != null)
+        {
+            ordenPor = evt.Value.ToString();
+        }
+
+        switch (ordenPor)
+        {
+            case "Nombre":
+                filteredPersonas = Global.OrderBy(p => p.FullName).ToList();
+                break;
+            case "Cedula":
+                filteredPersonas = Global.OrderBy(p => p.Id_Person).ToList();
+                break;
+            case "Activo":
+                filteredPersonas = Global.Where(p => p.Status == Status.Activo).ToList();
+                break;
+            case "Inactivo":
+                filteredPersonas = Global.Where(p => p.Status == Status.Inactivo).ToList();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void MostrarDetalles(Person persona)
+    {
+        nuevaPersona = persona;
+        mostrarDetalles = true;
+    }
+
+    private void CerrarDetalles()
+    {
+        mostrarDetalles = false;
+    }
+
+    private void MostrarModal()
+    {
+        esEdicion = false;
+        nuevaPersona = new Person(); // Resetea el formulario
+        nuevoUsuario = new User();
+        mostrarModal = true;
+    }
+
+    private async Task EditarPersona(string idPersona)
+    {
+        var persona = await PersonService.GetByIdAsync(idPersona);
+
+        if (persona != null)
+        {
+            nuevaPersona = persona;
+            esEdicion = true;
+            mostrarModal = true;
+        }
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+    }
+
+    private async Task GuardarPersona()
+    {
+        // Validar si la cédula de la persona ya existe antes de agregarla
+        if (!esEdicion && personas.Any(p => p.Id_Person == nuevaPersona.Id_Person))
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "La cédula de la persona ya existe. Introduzca una cédula diferente.");
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(nuevaPersona.FullName))
+        {
+            if (esEdicion)
+            {
+                await PersonService.UpdatePersonAsync(nuevaPersona);
+                await UserService.UpdateUserAsync(nuevoUsuario); // Asumiendo que también necesitas actualizar el usuario
+            }
+            else
+            {
+                await PersonService.AddPersonAsync(nuevaPersona);
+                nuevoUsuario.Id_User = nuevaPersona.Id_Person;
+                await UserService.AddUserAsync(nuevoUsuario); // Crear un usuario para la persona
+            }
+            await CargarPersonas(); 
+            CerrarModal();
+        }
+    }
+
+    private async Task EliminarPersona(string idPersona)
+    {
+        await UserService.DeleteUserAsync(idPersona);
+        await PersonService.DeletePersonAsync(idPersona);
+        await CargarPersonas();
+    }
+}

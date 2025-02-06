@@ -14,15 +14,30 @@
 <div class="container mt-4">
     <h3 class="text-center mb-4">Gestión Autores</h3>
 
+
+
     <!-- Campo de búsqueda -->
     <div class="mb-3">
         <input type="text" class="form-control" placeholder="Buscar autor..." @oninput="FiltrarAutores" />
+
+
     </div>
 
+    <!--  campo para agregar -->
     <div class="text-end mb-3">
         <button class="btn btn-add" @onclick="MostrarModal">
             <i class="fas fa-plus"></i> Agregar Autor
         </button>
+    </div>
+
+    <!-- Contenedor de "Ordenar por" alineado a la derecha -->
+    <div class="mb-3 d-flex justify-content-end align-items-center sort-container">
+        <select id="orderBy" class="form-select" @onchange="OrdenarAutores" >
+            <option value="Nombre">Orden Alfabético</option>
+            <option value="Edad">Por Edad</option>
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+        </select>
     </div>
 
     @if (authors == null)
@@ -40,14 +55,16 @@
             {
                 <div class="col-md-4 mb-4">
                     <div class="card h-100 shadow-sm border-0" style="background-color: #f9f9f9; width: 18rem; border-radius: 10px;">
-                        <img src="@(!string.IsNullOrEmpty(author.Photo) ? author.Photo : "https://via.placeholder.com/150")"
-                             class="card-img-top"
+                        <img src="@(!string.IsNullOrEmpty(author.Photo) ? author.Photo : "https://cdn-icons-png.flaticon.com/512/6745/6745487.png")"
+                             class="card-img-top img-hover"
                              alt="Foto de @author.Name"
-                             style="height: 200px; object-fit: cover; border-top-left-radius: 10px; border-top-right-radius: 10px;" />
+                             style="height: 200px; object-fit: cover; border-top-left-radius: 10px; border-top-right-radius: 10px;"
+                             title="Haz clic para más información"
+                             @onclick="() => VerDetallesAutor(author)" />
+
                         <div class="card-body d-flex flex-column" style="color: #333;">
                             <h5 class="card-title text-dark">@author.Name</h5>
-                            <p class="card-text mb-1"><strong>Edad:</strong> @author.Age</p>
-                            <p class="card-text flex-grow-1" style="font-size: 0.9rem;"><strong>Biografía:</strong> @author.Biography</p>
+
                             <div class="d-flex justify-content-between mt-3">
                                 <button class="btn btn-primary btn-sm fw-bold" @onclick="() => EditarAutor(author.Id_Author)">
                                     <i class="fas fa-edit"></i> Editar
@@ -69,7 +86,7 @@
         <div class="modal show d-block" style="background-color: rgba(0,0,0,0.5);">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header" >
+                    <div class="modal-header">
                         <h5 class="modal-title">@((esEdicion ? "Editar Autor" : "Agregar Autor"))</h5>
                         <button type="button" class="btn-close" @onclick="CerrarModal" style="filter: invert(1);"></button>
                     </div>
@@ -79,9 +96,8 @@
 
                             <div class="mb-3">
                                 <label for="idAuthor" class="form-label">ID</label>
-                                <input type="text" id="idAuthor" class="form-control" @bind="nuevoAutor.Id_Author" readonly="@esEdicion" required />
+                                <input type="text" id="idAuthor" class="form-control" @bind="nuevoAutor.Id_Author" readonly="@esEdicion" required h/>
                                 <ValidationMessage For="@(() => nuevoAutor.Name)" />
-
                             </div>
                             <div class="mb-3">
                                 <label for="name" class="form-label">Nombre</label>
@@ -102,10 +118,17 @@
                                 <label for="photo" class="form-label">URL de Foto</label>
                                 <input type="text" id="photo" class="form-control" @bind="nuevoAutor.Photo" />
                                 <ValidationMessage For="@(() => nuevoAutor.Photo)" />
-
+                            </div>
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Estado</label>
+                                <select id="status" class="form-control" @bind="nuevoAutor.Status">
+                                    <option value="Activo">Activo</option>
+                                    <option value="Inactivo">Inactivo</option>
+                                </select>
+                                <ValidationMessage For="@(() => nuevoAutor.Status)" />
                             </div>
 
-                            <div class="modal-footer" >
+                            <div class="modal-footer">
                                 <button class="btn btn-primary" type="submit">@((esEdicion ? "Guardar Cambios" : "Guardar"))</button>
                                 <button class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
                             </div>
@@ -115,15 +138,51 @@
             </div>
         </div>
     }
+
+    @if (modalAutorVisible)
+    {
+        <div class="modal show d-block modal-autor">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@autorSeleccionado.Name</h5>
+                        <button type="button" class="btn-close" @onclick="CerrarModalAutor"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="author-card">
+                            <div class="author-img">
+                                <img src="@autorSeleccionado.Photo" class="img-fluid" alt="Foto de @autorSeleccionado.Name">
+                            </div>
+                            <div class="author-info">
+                                <p class="author-detail"><strong>Edad:</strong> @autorSeleccionado.Age</p>
+                                <p class="author-detail"><strong>Biografía:</strong> @autorSeleccionado.Biography</p>
+                                <p class="author-detail"><strong>Estado:</strong> @autorSeleccionado.Status</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CerrarModalAutor">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+
 </div>
 
 @code {
     private IEnumerable<Author> authors;
-    private IEnumerable<Author> filteredAuthors; // Lista filtrada
+    private IEnumerable<Author> filteredAuthors; // Lista filtrada 
+    private IEnumerable<Author> Global; // Lista filtrada para buscar
     private string searchTerm = string.Empty;   // Término de búsqueda
     private Author nuevoAutor = new Author();
     private bool mostrarModal = false;
     private bool esEdicion = false;
+    private string ordenPor = "Activo"; // Orden por defecto
+
+    private Author autorSeleccionado;
+    private bool modalAutorVisible = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -133,7 +192,9 @@
     private async Task CargarAutores()
     {
         authors = await AuthorService.GetAlLAsync();
+        Global = authors;
         filteredAuthors = authors; // Inicialmente muestra todos los autores
+        OrdenarAutores(null);
     }
 
     private void FiltrarAutores(ChangeEventArgs evt)
@@ -141,16 +202,43 @@
         searchTerm = evt.Value.ToString();
         if (string.IsNullOrWhiteSpace(searchTerm))
         {
-            filteredAuthors = authors; // Si no hay búsqueda, muestra todos los autores
+            Global = authors; // Si no hay búsqueda, muestra todos los autores
         }
         else
         {
-            filteredAuthors = authors.Where(a =>
+            Global = authors.Where(a =>
             a.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
             a.Age.ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase) == true ||
             a.Id_Author.ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
             ).ToList();
+        }
 
+        OrdenarAutores(null);
+    }
+
+    private void OrdenarAutores(ChangeEventArgs evt)
+    {
+        if (evt != null)
+        {
+            ordenPor = evt.Value.ToString();
+        }
+
+        switch (ordenPor)
+        {
+            case "Nombre":
+                filteredAuthors = Global.OrderBy(a => a.Name).ToList();
+                break;
+            case "Edad":
+                filteredAuthors = Global.OrderBy(a => a.Age).ToList();
+                break;
+            case "Activo":
+                filteredAuthors = Global.Where(a => a.Status == Status.Activo).ToList();
+                break;
+            case "Inactivo":
+                filteredAuthors = Global.Where(a => a.Status == Status.Inactivo).ToList();
+                break;
+            default:
+                break;
         }
     }
 
@@ -159,6 +247,18 @@
         esEdicion = false;
         nuevoAutor = new Author(); // Resetea el formulario
         mostrarModal = true;
+    }
+
+    private void VerDetallesAutor(Author author)
+    {
+        autorSeleccionado = author;
+        modalAutorVisible = true;
+    }
+
+    private void CerrarModalAutor()
+    {
+        modalAutorVisible = false;
+        autorSeleccionado = null;
     }
 
     private async Task EditarAutor(string idAuthor)
@@ -208,7 +308,6 @@
             CerrarModal();
         }
     }
-
 
     private async Task EliminarAutor(string idAuthor)
     {

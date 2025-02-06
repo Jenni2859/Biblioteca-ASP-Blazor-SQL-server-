@@ -17,7 +17,7 @@ namespace Biblioteca.Business.Services
             _context = context;
         }
 
-        public async Task<byte[]> GenerarReporteAsync()
+        public async Task<byte[]> GenerarReporteLibroAsync()
         {
             try
             {
@@ -27,7 +27,7 @@ namespace Biblioteca.Business.Services
                                            {
                                                Titulo = b.Title,
                                                Autor = b.Author.Name,
-                                               Paginas = b.Pages,
+                                               Stock = b.Stock,
                                                Precio = b.Price,
                                                FechaEdicion = b.Edition_Date.ToString("dd/MM/yyyy")
                                            })
@@ -59,46 +59,39 @@ namespace Biblioteca.Business.Services
 
                                 column.Item().Text("Reporte de Libros")
                                     .FontSize(16)
-                                    .Italic()
-                                    .AlignCenter();
+                                    .Italic();
 
-                                column.Item().Text($"Fecha de Generación: {fechaActual}")
+                                column.Item().Text($"{fechaActual}")
                                     .FontSize(12)
                                     .AlignRight();
                             });
 
-
                         page.Content().Padding(20)
                             .Table(table =>
                             {
-
                                 table.ColumnsDefinition(columns =>
                                 {
-                                    columns.RelativeColumn();
-                                    columns.RelativeColumn();
-                                    columns.ConstantColumn(60);
-                                    columns.ConstantColumn(80);
-                                    columns.ConstantColumn(100);
+                                    columns.RelativeColumn(4); // Más espacio para el título
+                                    columns.RelativeColumn(4); // Más espacio para el autor
+                                    columns.RelativeColumn(2); // Stock
+                                    columns.RelativeColumn(2); // Precio
+                                    columns.RelativeColumn(2); // Fecha de edición
                                 });
-
 
                                 table.Header(header =>
                                 {
-                                    header.Cell().Text("Título").Bold().BackgroundColor("#FFA500");
-                                    header.Cell().Text("Autor").Bold().BackgroundColor("#FFA500");
-                                    header.Cell().Text("Páginas").Bold().BackgroundColor("#FFA500");
-                                    header.Cell().Text("Precio").Bold().BackgroundColor("#FFA500");
-                                    header.Cell().Text("Fecha Edición").Bold().BackgroundColor("#FFA500");
-
+                                    header.Cell().Text("Título").Bold().FontColor("#FFA500");
+                                    header.Cell().Text("Autor").Bold().FontColor("#FFA500");
+                                    header.Cell().Text("Stock").Bold().FontColor("#FFA500").AlignCenter();
+                                    header.Cell().Text("Precio").Bold().FontColor("#FFA500").AlignCenter();
+                                    header.Cell().Text("Edición").Bold().FontColor("#FFA500").AlignCenter();
                                 });
-
-
 
                                 foreach (var libro in libros)
                                 {
                                     table.Cell().Text(libro.Titulo);
                                     table.Cell().Text(libro.Autor);
-                                    table.Cell().Text(libro.Paginas.ToString());
+                                    table.Cell().Text(libro.Stock.ToString()).AlignCenter();
                                     table.Cell().Text(libro.Precio.ToString("C"));
                                     table.Cell().Text(libro.FechaEdicion);
                                 }

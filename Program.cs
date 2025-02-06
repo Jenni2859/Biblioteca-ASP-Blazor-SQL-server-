@@ -1,3 +1,4 @@
+using Biblioteca.Business.Interfaces;
 using Biblioteca.Business.Interfases;
 using Biblioteca.Business.Repositories;
 using Biblioteca.Business.Services;
@@ -20,9 +21,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
 builder.Services.AddScoped<IReportBook, ReportBookService>();
+builder.Services.AddScoped<IReportAuthor, ReportAuthorService>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ISanctionRepository, SanctionRepository>();
+builder.Services.AddScoped<ILoanRepository, LoanRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IPersonRepository, PersonRepository>();
+
+
+
 
 builder.Services.AddControllers(); 
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages();  
 builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
 

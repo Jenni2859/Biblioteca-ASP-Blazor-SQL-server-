@@ -39,7 +39,7 @@
     {
         if (firstRender)
         {
-            var pdfUrl = $"{Navigation.BaseUri}api/reports/ver";
+            var pdfUrl = $"{Navigation.BaseUri}api/reports/ver-libros";
             await JS.InvokeVoidAsync("loadPdf", "pdfViewer", "loadingMessage", pdfUrl);
         }
     }
@@ -47,7 +47,7 @@
     private async Task DescargarReporte()
     {
         // Obtiene la URL del reporte
-        var pdfUrl = $"{Navigation.BaseUri}api/reports/descargar";
+        var pdfUrl = $"{Navigation.BaseUri}api/reports/descargar-libros";
 
         // Usa JS Interop para hacer una solicitud de descarga del archivo PDF
         await JS.InvokeVoidAsync("downloadFile", pdfUrl);

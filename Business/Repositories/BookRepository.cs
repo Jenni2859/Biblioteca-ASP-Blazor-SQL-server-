@@ -2,6 +2,7 @@
 using Biblioteca.Data;
 using Biblioteca.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Biblioteca.Business.Repositories
 {
@@ -24,7 +25,7 @@ namespace Biblioteca.Business.Repositories
             var book = await _context.Books.FindAsync(id);
             if (book != null)
             {
-                _context.Books.Remove(book);
+                book.Status = Status.Inactivo; // Cambiamos el estado a inactivo en lugar de eliminar
                 await _context.SaveChangesAsync();
             }
         }

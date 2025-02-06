@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Biblioteca.Data.Models
 {
@@ -23,11 +24,29 @@ namespace Biblioteca.Data.Models
 
         [Required(ErrorMessage = "El stock es obligatorio.")]
         [Range(0, int.MaxValue, ErrorMessage = "El stock no puede ser negativo.")]
-        public int Stock { get; set; }  // Se cambió a mayúscula para seguir la convención de C#
+        public int Stock { get; set; }  
 
-        // Relación con el autor
+        // Relación con Autor
         [Required(ErrorMessage = "El autor es obligatorio.")]
-        public string Id_Author { get; set; }
+        [ForeignKey("Author")]
+        public string Id_Author { get; set; } = string.Empty;
         public Author Author { get; set; }
+
+        // Relación con Categoría
+        [Required(ErrorMessage = "La categoría es obligatoria.")]
+        [ForeignKey("Category")]
+        public int CategoryId { get; set; }
+        public Category Category { get; set; }
+
+        // Relación con detalles préstamos
+        public ICollection<LoanDetails> LoanDetail { get; set; } = new List<LoanDetails>();
+
+        public Status Status { get; set; } = Status.Activo;
+    }
+    // Enum para manejar el estado
+    public enum Status
+    {
+        Activo = 1,
+        Inactivo = 0
     }
 }

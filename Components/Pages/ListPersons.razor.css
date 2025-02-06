@@ -15,7 +15,7 @@ body {
 
 h3 {
     text-align: center;
-    color: #0a9396; 
+    color: #ffffff;
     font-size: 2.5rem;
     margin-bottom: 30px;
 }
@@ -37,7 +37,7 @@ input.form-control {
 button.btn-add {
     border-radius: 25px;
     padding: 8px 20px;
-    background-color: #0a9396; /* Color coherente con el esquema */
+    background-color: #0a9396;
     border: none;
     font-weight: bold;
     transition: all 0.3s ease;
@@ -49,11 +49,11 @@ button.btn-add {
         transform: translateY(-2px);
     }
 
-/* Tarjetas de autores */
+/* Tarjetas de personas */
 .card {
-    background-color: #e0e1dd; /* Cambiar el fondo de la tarjeta */
+    background-color: #e0e1dd;
     border-radius: 15px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     overflow: hidden;
     margin-bottom: 20px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -61,7 +61,7 @@ button.btn-add {
 
     .card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3); /* Mayor sombra en hover */
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
     }
 
 .card-img-top {
@@ -74,41 +74,43 @@ button.btn-add {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    color: #444; /* Cambiar el color del texto */
-    background-color: #f4f4f4; /* Fondo más suave para el contenido */
+    color: #444;
+    background-color: #f4f4f4;
 }
 
 .card-title {
     font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: 10px;
-    color: #005f73; /* Color del título */
+    color: #005f73;
 }
 
 .card-text {
     font-size: 1rem;
     margin-bottom: 10px;
-    color: #333; /* Color del texto */
+    color: #333;
 }
 
     .card-text strong {
-        color: #0a9396; /* Color coherente con los colores */
+        color: #0a9396;
     }
 
 .card-footer {
     display: flex;
     justify-content: space-between;
-    background-color: #e0e1dd; /* Fondo del pie de la tarjeta */
+    background-color: #e0e1dd;
 }
 
-button.btn-primary, button.btn-danger {
+button.btn-primary,
+button.btn-danger {
     border-radius: 20px;
     padding: 5px 15px;
     font-size: 0.9rem;
     font-weight: bold;
 }
 
-    button.btn-primary:hover, button.btn-danger:hover {
+    button.btn-primary:hover,
+    button.btn-danger:hover {
         transform: translateY(-2px);
     }
 
@@ -134,14 +136,16 @@ button.btn-primary, button.btn-danger {
     font-weight: bold;
 }
 
-textarea.form-control, input.form-control {
+textarea.form-control,
+input.form-control {
     border-radius: 10px;
     padding: 10px;
     border: 1px solid #ddd;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-    textarea.form-control:focus, input.form-control:focus {
+    textarea.form-control:focus,
+    input.form-control:focus {
         border-color: #0a9396;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     }
@@ -155,7 +159,8 @@ textarea.form-control, input.form-control {
     padding: 10px;
 }
 
-button.btn-secondary, button.btn-primary {
+button.btn-secondary,
+button.btn-primary {
     border-radius: 20px;
     padding: 8px 20px;
     font-weight: bold;
@@ -171,66 +176,12 @@ button.btn-addd {
         background-color: #005f73;
     }
 
-/* Modales Adicionales */
-
-/* Modal de Edición */
-.modal-edit .modal-content {
-    background-color: #f0f8ff;
-}
-
-.modal-edit .modal-header {
-    background-color: #1e90ff;
-}
-
-.modal-edit .modal-footer {
-    background-color: #f1f1f1;
-}
-
-/* Modal de Eliminación */
-.modal-delete .modal-content {
-    background-color: #ffe4e1;
-}
-
-.modal-delete .modal-header {
-    background-color: #ff6347;
-}
-
-.modal-delete .modal-footer {
-    background-color: #f9f9f9;
-}
-
-/* Modal de Confirmación */
-.modal-confirm .modal-content {
-    background-color: #f5fffa;
-}
-
-.modal-confirm .modal-header {
-    background-color: #3cb371;
-}
-
-.modal-confirm .modal-footer {
-    background-color: #f1f1f1;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .card {
-        width: 100%;
-    }
-
-    .author-list {
-        flex-direction: column;
-        align-items: center;
-    }
-}
-
-/* Estilo para el contenedor del "Ordenar por" */
+/* Estilos para el contenedor "Ordenar por" */
 .mb-3.d-flex {
     margin-bottom: 20px;
     align-items: center;
 }
 
-/* Etiqueta de "Ordenar por" */
 .form-label {
     font-weight: bold;
     color: #333;
@@ -247,7 +198,6 @@ button.btn-addd {
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-    /* Efectos de hover y focus para el select */
     .select-control:hover {
         border-color: #0a9396;
     }
@@ -260,6 +210,15 @@ button.btn-addd {
 
 /* Diseño para la sección "Ordenar por" en pantallas pequeñas */
 @media (max-width: 768px) {
+    .card {
+        width: 100%;
+    }
+
+    .author-list {
+        flex-direction: column;
+        align-items: center;
+    }
+
     .mb-3.d-flex {
         flex-direction: column;
         align-items: flex-start;
@@ -277,64 +236,17 @@ button.btn-addd {
     border-radius: 10px;
 }
 
-    /* Estilo para el contenedor "Ordenar por" */
-    .sort-container select.form-select {
-        border-radius: 20px;
-        padding: 10px 15px;
-        background-color: #f1f1f1;
-        border: 1px solid #ddd;
-        width: 200px;
+/* Estilo para el contenedor "Ordenar por" */
+.sort-container select.form-select {
+    border-radius: 20px;
+    padding: 10px 15px;
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    width: 200px;
+}
+
+    .sort-container select.form-select:focus {
+        background-color: #ffffff;
+        border-color: #007bff;
     }
 
-        .sort-container select.form-select:focus {
-            background-color: #ffffff;
-            border-color: #007bff;
-        }
-
-.modal-autor .modal-content {
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    padding: 20px;
-}
-
-.author-card {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.author-img img {
-    border-radius: 50%;
-    max-width: 120px;
-    max-height: 120px;
-    object-fit: cover;
-}
-
-.author-info {
-    flex-grow: 1;
-}
-
-.author-detail {
-    font-size: 1rem;
-    margin-bottom: 10px;
-    color: #333;
-}
-
-.modal-header {
-    border-bottom: 1px solid #dee2e6;
-}
-
-.modal-footer {
-    border-top: 1px solid #dee2e6;
-}
-
-.btn-close {
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    color: #6c757d;
-}
-
-    .btn-close:hover {
-        color: #495057;
-    }
