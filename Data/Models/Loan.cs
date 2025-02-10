@@ -18,7 +18,7 @@ namespace Biblioteca.Data.Models
         public DateTime LoanDate { get; set; } = DateTime.Now;
 
         [Required(ErrorMessage = "La fecha de devolución es obligatoria.")]
-        public DateTime ReturnDate { get; set; }
+        public DateTime ReturnDate { get; set; } = DateTime.Now;
 
         public DateTime? ActualReturnDate { get; set; }
 

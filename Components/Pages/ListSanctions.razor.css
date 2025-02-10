@@ -15,7 +15,7 @@ body {
 
 h3 {
     text-align: center;
-    color: #0a9396;
+    color: #0a9396; /* Usando un color claro para el título */
     font-size: 2.5rem;
     margin-bottom: 30px;
 }
@@ -37,7 +37,7 @@ input.form-control {
 button.btn-add {
     border-radius: 25px;
     padding: 8px 20px;
-    background-color: #0a9396;
+    background-color: #0a9396; /* Color coherente con el esquema */
     border: none;
     font-weight: bold;
     transition: all 0.3s ease;
@@ -49,11 +49,11 @@ button.btn-add {
         transform: translateY(-2px);
     }
 
-/* Tarjetas de personas */
+/* Tarjetas de libros */
 .card {
-    background-color: #e0e1dd;
+    background-color: #e0e1dd; /* Cambiar el fondo de la tarjeta */
     border-radius: 15px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
     overflow: hidden;
     margin-bottom: 20px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -61,7 +61,7 @@ button.btn-add {
 
     .card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3); /* Mayor sombra en hover */
     }
 
 .card-img-top {
@@ -74,44 +74,41 @@ button.btn-add {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    color: #444;
-    background-color: #f4f4f4;
+    color: #444; /* Cambiar el color del texto */
+    background-color: #f4f4f4; /* Fondo más suave para el contenido */
 }
 
 .card-title {
     font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: 10px;
-    color: #005f73;
+    color: #005f73; /* Color del título */
 }
 
 .card-text {
-    font-size: 1rem;
+    font-size: 1.2rem;
     margin-bottom: 10px;
-    color: #333;
+    color: #333; /* Color del texto */
 }
 
     .card-text strong {
-        color: #0a9396;
+        color: #0a9396; /* Color coherente con los colores */
     }
 
 .card-footer {
     display: flex;
     justify-content: space-between;
-    background-color: #e0e1dd;
+    background-color: #e0e1dd; /* Fondo del pie de la tarjeta */
 }
 
-button.btn-primary,
-button.btn-danger {
+button.btn-primary, button.btn-danger, button.btn-warning {
     border-radius: 20px;
     padding: 5px 15px;
     font-size: 0.9rem;
     font-weight: bold;
-    margin: 5px;
 }
 
-    button.btn-primary:hover,
-    button.btn-danger:hover {
+    button.btn-primary:hover, button.btn-danger:hover, button.btn-warning {
         transform: translateY(-2px);
     }
 
@@ -137,16 +134,14 @@ button.btn-danger {
     font-weight: bold;
 }
 
-textarea.form-control,
-input.form-control {
+textarea.form-control, input.form-control {
     border-radius: 10px;
     padding: 10px;
     border: 1px solid #ddd;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-    textarea.form-control:focus,
-    input.form-control:focus {
+    textarea.form-control:focus, input.form-control:focus {
         border-color: #0a9396;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     }
@@ -160,8 +155,7 @@ input.form-control {
     padding: 10px;
 }
 
-button.btn-secondary,
-button.btn-primary {
+button.btn-secondary, button.btn-primary, button.btn-warning {
     border-radius: 20px;
     padding: 8px 20px;
     font-weight: bold;
@@ -176,6 +170,18 @@ button.btn-addd {
     button.btn-addd:hover {
         background-color: #005f73;
     }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card {
+        width: 100%;
+    }
+
+    .author-list {
+        flex-direction: column;
+        align-items: center;
+    }
+}
 
 /* Estilos para el contenedor "Ordenar por" */
 .mb-3.d-flex {
@@ -237,17 +243,92 @@ button.btn-addd {
     border-radius: 10px;
 }
 
-/* Estilo para el contenedor "Ordenar por" */
-.sort-container select.form-select {
-    border-radius: 20px;
-    padding: 10px 15px;
-    background-color: #f1f1f1;
-    border: 1px solid #ddd;
-    width: 200px;
+    /* Estilo para el contenedor "Ordenar por" */
+    .sort-container select.form-select {
+        border-radius: 20px;
+        padding: 10px 15px;
+        background-color: #f1f1f1;
+        border: 1px solid #ddd;
+        width: 200px;
+    }
+
+        .sort-container select.form-select:focus {
+            background-color: #ffffff;
+            border-color: #007bff;
+        }
+
+
+h4 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #0a9396;
 }
 
-    .sort-container select.form-select:focus {
-        background-color: #ffffff;
-        border-color: #007bff;
+.dates-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+    .dates-container .mb-3 {
+        flex: 1;
     }
+
+/* Contenido de la sanción */
+.sanction-content {
+    padding: 15px 20px;
+    flex-grow: 1;
+}
+
+.sanction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+    .sanction-header h5 {
+        font-size: 1.2rem;
+        color: #333;
+        font-weight: bold;
+    }
+
+/* Etiqueta de estado */
+.badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.badge-active {
+    background: #28a745;
+    color: white;
+}
+
+.badge-inactive {
+    background: #dc3545;
+    color: white;
+}
+
+/* Estilos de los textos */
+.sanction-content p {
+    font-size: 1rem;
+    margin: 5px 0;
+    color: #555;
+}
+
+.sanction-content i {
+    margin-right: 8px;
+    color: #0a9396;
+}
+
+/* Botones de acción */
+.sanction-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+
 

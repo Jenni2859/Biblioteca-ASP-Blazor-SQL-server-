@@ -1,68 +1,153 @@
-﻿body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #f4f4f9;
+﻿/* General */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(180deg, #005f73 0%, #0a9396 50%, #94d2bd 100%);
+    color: #333;
     margin: 0;
     padding: 0;
+    animation: fadeIn 1s ease-in-out;
+}
+
+/* Animación de desvanecimiento al cargar la página */
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 .container {
     max-width: 1200px;
     margin: 30px auto;
     padding: 0 15px;
+    animation: slideIn 0.5s ease-out;
+}
 
+/* Animación de deslizamiento hacia arriba */
+@keyframes slideIn {
+    0% {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 h3 {
     text-align: center;
-    color: #FFA500;
+    color: #0a9396;
     font-size: 2.5rem;
     margin-bottom: 30px;
+    animation: bounceIn 1s ease-out;
 }
 
+/* Animación de rebote para el título */
+@keyframes bounceIn {
+    0% {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+
+    50% {
+        transform: translateY(15px);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+/* Tarjetas */
 .card {
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #e0e1dd; /* Fondo de la tarjeta */
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     padding: 20px;
     margin-bottom: 20px;
     transition: all 0.3s ease;
+    opacity: 0;
+    animation: fadeInCard 0.5s ease-in-out forwards;
 }
 
-    .card:hover {
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+/* Animación de desvanecimiento de las tarjetas */
+@keyframes fadeInCard {
+    0% {
+        opacity: 0;
     }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.card:hover {
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+}
 
 .card-title {
     font-size: 1.25rem;
     font-weight: 500;
-    color: #333;
+    color: #005f73;
 }
 
 .card-body {
     padding: 10px;
-    background-color: #FFF5E1;
+    background-color: #f4f4f4; /* Fondo más suave */
     border-radius: 8px;
 }
 
+/* Listado de autores */
 .author-list {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
+    animation: fadeInList 1s ease-out;
+}
+
+/* Animación de desvanecimiento del listado */
+@keyframes fadeInList {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 .author-card {
     width: 30%;
     min-width: 250px;
-    background-image: linear-gradient(180deg, #FFA500 0%, #FF8C00 50%, #FF4500 100%);
+    background-color: #0a9396;
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
+    opacity: 0;
+    animation: fadeInAuthorCard 0.5s ease-in-out forwards;
 }
 
-    .author-card:hover {
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+/* Animación de desvanecimiento de las tarjetas de autor */
+@keyframes fadeInAuthorCard {
+    0% {
+        opacity: 0;
     }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.author-card:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
 
 .author-name {
     font-size: 1.1rem;
@@ -73,7 +158,7 @@ h3 {
 
 .book-title {
     font-size: 1rem;
-    color: #555;
+    color: #444;
     margin-bottom: 5px;
 }
 
@@ -81,3 +166,45 @@ h3 {
     color: #888;
     font-size: 0.9rem;
 }
+
+.stat-card {
+    background: linear-gradient(135deg, #0a9396, #94d2bd);
+    color: white;
+    text-align: center;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    opacity: 0;
+    animation: fadeInScale 0.5s ease-in-out forwards;
+}
+
+    .stat-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .stat-card h5 {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .stat-card p {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+/* Animación */
+@keyframes fadeInScale {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+

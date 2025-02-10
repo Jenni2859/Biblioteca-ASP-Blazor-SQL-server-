@@ -53,8 +53,13 @@ namespace Biblioteca.Business.Repositories
 
         public async Task UpdateUserAsync(User user)
         {
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            var existing = await _context.Users.FindAsync(user.Id_User);
+            if (existing != null)
+            {
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+            }
+           
         }
     }
 }

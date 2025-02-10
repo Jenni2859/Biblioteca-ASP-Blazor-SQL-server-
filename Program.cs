@@ -25,8 +25,12 @@ builder.Services.AddScoped<IReportAuthor, ReportAuthorService>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ISanctionRepository, SanctionRepository>();
 builder.Services.AddScoped<ILoanRepository, LoanRepository>();
+builder.Services.AddScoped<ILoanDetailsRepository, LoanDetailsRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPersonRepository, PersonRepository>();
+
+builder.Services.AddDbContext<DbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ConnetionDB")), ServiceLifetime.Scoped);
 
 
 

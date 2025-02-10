@@ -27,8 +27,13 @@ namespace Biblioteca.Business.Repositories
         // Método para actualizar una persona existente
         public async Task UpdatePersonAsync(Person person)
         {
-            _context.Persons.Update(person);
-            await _context.SaveChangesAsync();
+            var existing = await _context.Persons.FindAsync(person.Id_Person);
+            if (existing != null)
+            {
+                _context.Persons.Update(person);
+                await _context.SaveChangesAsync();
+            }
+            
         }
 
         // Método para desactivar una persona (cambiar el estado a Inactivo)

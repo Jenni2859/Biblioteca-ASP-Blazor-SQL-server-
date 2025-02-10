@@ -20,14 +20,14 @@ namespace Biblioteca.Data.Models
 
         // Estado del libro en el préstamo
         [Required]
-        public BookLoanStatus Status { get; set; } = BookLoanStatus.Entregado; // Estado predeterminado
+        public BookLoanStatus Status { get; set; } = BookLoanStatus.Pendiente; // Estado predeterminado
 
     }
 
     public enum BookLoanStatus
     {
         Devuelto,
-        Entregado,
+        Pendiente,
         Atrasado
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Biblioteca.Migrations
 {
     /// <inheritdoc />
-    public partial class MigrationInitial : Migration
+    public partial class Migration1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -73,7 +73,7 @@ namespace Biblioteca.Migrations
                     Edition_Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Stock = table.Column<int>(type: "int", nullable: false),
                     Id_Author = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CategoryId = table.Column<int>(type: "int", nullable: true),
+                    CategoryId = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     AuthorId_Author = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
@@ -96,6 +96,30 @@ namespace Biblioteca.Migrations
                         column: x => x.CategoryId,
                         principalTable: "Categories",
                         principalColumn: "Id_Category",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Loans",
+                columns: table => new
+                {
+                    Id_Loan = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PersonId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    LoanDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ReturnDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ActualReturnDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    TotalBooks = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Loans", x => x.Id_Loan);
+                    table.ForeignKey(
+                        name: "FK_Loans_Persons_PersonId",
+                        column: x => x.PersonId,
+                        principalTable: "Persons",
+                        principalColumn: "Id_Person",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -145,44 +169,14 @@ namespace Biblioteca.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Loans",
-                columns: table => new
-                {
-                    Id_Loan = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PersonId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    BookId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LoanDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ReturnDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ActualReturnDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    TotalBooks = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Loans", x => x.Id_Loan);
-                    table.ForeignKey(
-                        name: "FK_Loans_Books_BookId",
-                        column: x => x.BookId,
-                        principalTable: "Books",
-                        principalColumn: "Id_Book",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Loans_Persons_PersonId",
-                        column: x => x.PersonId,
-                        principalTable: "Persons",
-                        principalColumn: "Id_Person",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "LoanDetails",
                 columns: table => new
                 {
                     Id_LoanDetail = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     LoanId = table.Column<int>(type: "int", nullable: false),
-                    BookId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    BookId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -213,6 +207,7 @@ namespace Biblioteca.Migrations
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     FineAmount = table.Column<double>(type: "float", nullable: true),
+                    StatusFineAmount = table.Column<int>(type: "int", nullable: false),
                     Reason = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false)
                 },
@@ -269,11 +264,6 @@ namespace Biblioteca.Migrations
                 column: "LoanId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Loans_BookId",
-                table: "Loans",
-                column: "BookId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Loans_PersonId",
                 table: "Loans",
                 column: "PersonId");
@@ -305,19 +295,19 @@ namespace Biblioteca.Migrations
                 name: "Users");
 
             migrationBuilder.DropTable(
-                name: "Loans");
-
-            migrationBuilder.DropTable(
                 name: "Books");
 
             migrationBuilder.DropTable(
-                name: "Persons");
+                name: "Loans");
 
             migrationBuilder.DropTable(
                 name: "Authors");
 
             migrationBuilder.DropTable(
                 name: "Categories");
+
+            migrationBuilder.DropTable(
+                name: "Persons");
         }
     }
 }

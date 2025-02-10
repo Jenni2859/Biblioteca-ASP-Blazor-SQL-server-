@@ -57,8 +57,13 @@ namespace Biblioteca.Business.Repositories
 
         public async Task UpdateAuthorAsync(Author author)
         {
-            _context.Authors.Update(author); 
-            await _context.SaveChangesAsync();
+            var existing = await _context.Authors.FindAsync(author.Id_Author);
+            if (existing != null)
+            {
+                _context.Entry(existing).CurrentValues.SetValues(author);
+                await _context.SaveChangesAsync();
+            }
+            
         }
     }
 }

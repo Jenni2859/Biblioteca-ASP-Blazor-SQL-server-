@@ -49,8 +49,13 @@ namespace Biblioteca.Business.Repositories
 
         public async Task UpdateLoanAsync(Loan loan)
         {
-            _context.Loans.Update(loan);
-            await _context.SaveChangesAsync();
+            var existing = await _context.Loans.FindAsync(loan.Id_Loan);
+            if (existing != null)
+            {
+                _context.Loans.Update(loan);
+                await _context.SaveChangesAsync();
+            }
+            
         }
 
         public async Task DeleteLoanAsync(int id)

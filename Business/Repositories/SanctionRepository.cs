@@ -43,8 +43,23 @@ namespace Biblioteca.Business.Repositories
 
         public async Task UpdateSanctionAsync(Sanction sanction)
         {
-            _context.Sanctions.Update(sanction);
-            await _context.SaveChangesAsync();
+            var existing = await _context.Sanctions.FindAsync(sanction.Id_Sanction);
+            if (existing != null)
+            {
+                existing.PersonId = sanction.PersonId;
+                existing.LoanId = sanction.LoanId;
+                existing.Type = sanction.Type;
+                existing.StartDate = sanction.StartDate;
+                existing.EndDate = sanction.EndDate;
+                existing.FineAmount = sanction.FineAmount;
+                existing.Reason = sanction.Reason;
+                existing.Status = sanction.Status;
+                existing.StatusFineAmount = sanction.StatusFineAmount;
+
+                _context.Sanctions.Update(existing);
+                await _context.SaveChangesAsync();
+            }
+            
         }
 
         public async Task DeleteSanctionAsync(int id)

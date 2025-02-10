@@ -1,0 +1,377 @@
+﻿/* General */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(180deg, #d3f8e2 0%, #b7e0d8 50%, #94d2bd 100%);
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 15px;
+}
+
+h3 {
+    text-align: center;
+    color: #00796b;
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+}
+
+/* Búsqueda */
+input.form-control {
+    border-radius: 25px;
+    padding: 10px 20px;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+    input.form-control:focus {
+        outline: none;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+button.btn-add {
+    border-radius: 25px;
+    padding: 8px 20px;
+    background-color: #00796b; /* Color coherente con el esquema pastel */
+    border: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    color: white;
+}
+
+    button.btn-add:hover {
+        background-color: #004d40;
+        transform: translateY(-2px);
+    }
+
+/* Tarjetas de autores */
+.card {
+    background-color: #f4f4f4; /* Fondo más suave */
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+    overflow: hidden;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3); /* Mayor sombra en hover */
+    }
+
+.card-img-top {
+    height: 210px;
+    object-fit: cover;
+}
+
+.card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #444; /* Cambiar el color del texto */
+    background-color: #ffffff; /* Fondo más suave para el contenido */
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #00796b; /* Color del título */
+}
+
+.card-text {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: #333; /* Color del texto */
+}
+
+    .card-text strong {
+        color: #004d40; /* Color coherente con los colores */
+    }
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    background-color: #f4f4f4; /* Fondo del pie de la tarjeta */
+}
+
+button.btn-primary, button.btn-danger, button.btn-warning {
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin:3px;
+}
+
+    button.btn-primary:hover, button.btn-danger:hover, button.btn-warning:hover {
+        transform: translateY(-2px);
+    }
+
+.link-sanction {
+    color: white;
+    font-size: 1rem;
+    text-decoration: none;
+}
+
+/* Modal */
+.modal-content {
+    border-radius: 10px;
+    background-color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    background-color: #00796b;
+    color: white;
+    border-radius: 10px 10px 0 0;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.form-label {
+    font-weight: bold;
+}
+
+textarea.form-control, input.form-control {
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+    textarea.form-control:focus, input.form-control:focus {
+        border-color: #00796b;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+.modal-footer {
+    background-color: #f9f9f9;
+    border-radius: 0 0 10px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+button.btn-secondary, button.btn-primary {
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+button.btn-addd {
+    background-color: #00796b;
+    border: none;
+}
+
+    button.btn-addd:hover {
+        background-color: #004d40;
+    }
+
+/* Modales Adicionales */
+
+/* Modal de Edición */
+.modal-edit .modal-content {
+    background-color: #e0f7fa;
+}
+
+.modal-edit .modal-header {
+    background-color: #26c6da;
+}
+
+.modal-edit .modal-footer {
+    background-color: #f1f1f1;
+}
+
+/* Modal de Eliminación */
+.modal-delete .modal-content {
+    background-color: #ffe0b2;
+}
+
+.modal-delete .modal-header {
+    background-color: #ff7043;
+}
+
+.modal-delete .modal-footer {
+    background-color: #f9f9f9;
+}
+
+/* Modal de Confirmación */
+.modal-confirm .modal-content {
+    background-color: #e8f5e9;
+}
+
+.modal-confirm .modal-header {
+    background-color: #388e3c;
+}
+
+.modal-confirm .modal-footer {
+    background-color: #f1f1f1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card {
+        width: 100%;
+    }
+
+    .author-list {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* Estilo para el contenedor del "Ordenar por" */
+.mb-3.d-flex {
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+/* Etiqueta de "Ordenar por" */
+.form-label {
+    font-weight: bold;
+    color: #333;
+    margin-right: 10px;
+}
+
+/* Estilo del select */
+.select-control {
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    color: #333;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .select-control:hover {
+        border-color: #00796b;
+    }
+
+    .select-control:focus {
+        outline: none;
+        box-shadow: 0 0 5px rgba(10, 147, 150, 0.5);
+        border-color: #00796b;
+    }
+
+/* Diseño para la sección "Ordenar por" en pantallas pequeñas */
+@media (max-width: 768px) {
+    .mb-3.d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Contenedor para ordenar */
+.sort-container {
+    position: relative;
+    right: 0;
+    width: 20%;
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+    .sort-container select.form-select {
+        border-radius: 20px;
+        padding: 10px 15px;
+        background-color: #f1f1f1;
+        border: 1px solid #ddd;
+        width: 200px;
+    }
+
+        .sort-container select.form-select:focus {
+            background-color: #ffffff;
+            border-color: #00796b;
+        }
+
+.modal-autor .modal-content {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.author-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.author-img img {
+    border-radius: 50%;
+    max-width: 120px;
+    max-height: 120px;
+    object-fit: cover;
+}
+
+.author-info {
+    flex-grow: 1;
+}
+
+.author-detail {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.modal-header {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-footer {
+    border-top: 1px solid #dee2e6;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: white;
+}
+
+    .btn-close:hover {
+        color: #495057;
+    }
+
+.dropdown-menu {
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: white;
+    border: 1px solid #ddd;
+}
+
+.dropdown-item {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+    .dropdown-item:hover {
+        background-color: #00796b;
+        color: white;
+    }
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+}
+
+.active {
+    background-color: #00796b;
+    color: white;
+}
+
+

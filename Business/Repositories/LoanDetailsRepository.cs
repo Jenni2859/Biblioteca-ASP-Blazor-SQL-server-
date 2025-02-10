@@ -62,5 +62,22 @@ namespace Biblioteca.Business.Repositories
             _context.LoanDetails.Update(loanDetails);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<LoanDetails>> GetByLoanIdAsync(int loanId)
+        {
+            var loanDetails = await _context.LoanDetails
+                                            .Include(ld => ld.Loan)
+                                            .Include(ld => ld.Book)
+                                            .AsNoTracking()
+                                            .Where(ld => ld.LoanId == loanId)
+                                            .ToListAsync();
+
+            if (!loanDetails.Any())
+            {
+                throw new KeyNotFoundException($"No se encontraron detalles de préstamo para el ID de préstamo {loanId}.");
+            }
+
+            return loanDetails.AsEnumerable(); // Convertimos List<LoanDetails> a IEnumerable<LoanDetails>
+        }
     }
 }

@@ -1,0 +1,623 @@
+﻿@page "/listSanctions/{id:int?}"
+
+@using Biblioteca.Business.Interfaces
+@using Biblioteca.Data.Models
+@inject IJSRuntime JsRuntime
+@inject ISanctionRepository SanctionService
+@inject IPersonRepository PersonService
+@inject ILoanRepository LoanService
+
+
+<!-- Agregar Font Awesome para los iconos -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<div class="container mt-4">
+    <h3 class="text-center mb-4">Gestión de Sanciones</h3>
+
+    <!-- Buscador -->
+    <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Buscar sanción..." @oninput="FiltrarSanciones" />
+    </div>
+
+    <!-- Botón para agregar -->
+    <div class="text-end mb-3">
+        <button class="btn btn-add" @onclick="MostrarModal">
+            <i class="fas fa-plus"></i> Agregar sanción
+        </button>
+    </div>
+
+    <!-- Contenedor de "Ordenar por" alineado a la derecha -->
+    <div class="mb-3 d-flex justify-content-end align-items-center sort-container">
+        <select id="orderBy" class="form-select" @onchange="OrdenarSanciones">
+            <option value="Todos">Ver todas</option>
+            <option value="@Status.Activo">Activo</option>
+            <option value="@Status.Inactivo">Inactivo</option>
+            <option value="Time">Sanción por Tiempo</option>
+            <option value="Money">Sanción Monetarias</option>
+        </select>
+    </div>
+
+    @if (sanctions == null)
+    {
+        <p class="text-center">Cargando sanciones...</p>
+    }
+    else if (!sanctions.Any())
+    {
+        <p class="text-center">No hay sanciones disponibles.</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var sanction in filteredSanctions)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0" style="background-color: #f9f9f9; border-radius: 15px;">
+                        <div class="card-body d-flex flex-column" >
+                            <div class="sanction-header">
+                                <h5>#@sanction.Id_Sanction</h5>
+
+                                <span class="badge @(sanction.Type == SanctionType.Tiempo
+                                     ? (sanction.IsActive ? "badge-active" : "badge-inactive")
+                                     : (sanction.IsActivePayment ? "badge-inactive" : "badge-active"))">
+                                    @(sanction.Type == SanctionType.Tiempo
+                                        ? (sanction.IsActive ? "Activa" : "Inactiva")
+                                        : (sanction.IsActivePayment ? "Pendiente" : "Pagada"))
+                                </span>
+
+                            </div>
+                            <p class ="card-text">
+                                <i class="fas fa-exclamation-circle" style="color:#0a9396"></i>
+                                <strong>Motivo:</strong> @sanction.Reason
+                            </p>
+                            <p class="card-text">
+                                <i class="fas fa-user" style="color:#0a9396"></i>
+                                <strong>Persona:</strong> @sanction.Person.FullName
+                            </p>
+                            <p class="card-text">
+                                <i class="fas fa-book" style="color:#0a9396"></i>
+                                <strong>Préstamo:</strong> @sanction.LoanId
+                            </p>
+                            <p class="card-text">
+                                <i class="fas fa-gavel" style="color:#0a9396"></i>
+                                <strong>Tipo de sanción:</strong> @sanction.Type
+                            </p>
+
+                            <div class="d-flex justify-content-between mt-auto gap-3">
+                                
+                                <button class="btn btn-primary btn-sm" @onclick="() => EditarSancion(sanction.Id_Sanction)">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button class="btn btn-warning btn-sm fw-bold" style=" color:white" @onclick="() => VerDetallesSancion(sanction, sanction.Id_Sanction)">
+                                    Ver detalles
+                                </button>
+                                <button class="btn btn-danger btn-sm" @onclick="() => EliminarSancion(sanction.Id_Sanction)">
+                                    <i class="fas fa-trash-alt"></i> Eliminar
+                                </button>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+    }
+
+    <!-- Modal -->
+    @if (mostrarModal)
+    {
+        <div class="modal show d-block">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@((esEdicion ? "Editar" : "Agregar") + " Sanción")</h5>
+                        <button type="button" class="btn-close" @onclick="CerrarModal" style="filter: invert(1);"></button>
+                    </div>
+                    <div class="modal-body">
+                        <EditForm Model="nuevaSancion" OnValidSubmit="GuardarSancion">
+                            <DataAnnotationsValidator />
+
+                            <div class="mb-3">
+                                <h4>Datos</h4>
+
+                                <div class="dates-container">
+                                    @* <div class="mb-3">
+                                        <label class="form-label">ID Prestamo</label>
+                                        <InputNumber class="form-control" @bind-Value="nuevaSancion.LoanId" required disabled="esEdicion" />
+                                    </div> *@
+                                    <!-- Campo de búsqueda con lista personalizada -->
+                                    <div class="position-relative mt-1">
+                                        <label>ID Prestamo:</label>
+                                        <input type="text" class="form-control" placeholder="Escriba para buscar..."
+                                               @bind="loanSearch"
+                                               @oninput="OnLoanInput"
+                                               @onfocus="MostrarListaPrestamo"
+                                               @onblur="OcultarListaPrestamo"
+                                               disabled="@esEdicion" 
+                                               required />
+                                        <ValidationMessage For="@(() => nuevaSancion.LoanId)" />
+
+                                        <div class="dropdown-menu show" style="width: 100%; display: @(mostrarListaPrestamo ? "block" : "none");" id="dropdownAutores">
+                                            @if (filteredLoans.Any())
+                                            {
+                                                @foreach (var loans in filteredLoans)
+                                                {
+                                                    <button type="button"
+                                                            class="dropdown-item @(loans.Id_Loan == nuevaSancion.LoanId)"
+                                                            @onclick="() => SeleccionarPrestamo(loans)">
+                                                        @loans.Id_Loan
+                                                    </button>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <button type="button" class="dropdown-item disabled">No se encontraron resultados</button>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Persona</label>
+                                        <InputText class="form-control" @bind-Value="nuevaSancion.PersonId" required disabled="esEdicion" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Tipo de Sanción</label>
+                                <InputSelect class="form-select" @bind-Value="nuevaSancion.Type" disabled="@esEdicion">
+                                    <option value="@SanctionType.Tiempo">Por Tiempo</option>
+                                    <option value="@SanctionType.Monetario">Monetaria</option>
+                                </InputSelect>
+                            </div>
+
+                            @if (nuevaSancion.Type == SanctionType.Tiempo)
+                            {
+                                <div class="mb-3">
+                                    <h4>Tiempo de restricción</h4>
+
+                                    <div class="dates-container">
+                                        <div class="mb-3">
+                                            <label class="form-label">Fecha de Inicio</label>
+                                            <InputDate class="form-control" @bind-Value="nuevaSancion.StartDate" required />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Fecha de Fin</label>
+                                            <InputDate class="form-control" @bind-Value="nuevaSancion.EndDate" required />
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            }
+
+                            @if (nuevaSancion.Type == SanctionType.Monetario)
+                            {
+                                
+                                <div class="mb-3">
+                                    <h4>Restricción</h4>
+
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <label class="form-label">Monto de la Multa</label>
+                                            <InputNumber class="form-control" @bind-Value="nuevaSancion.FineAmount" required />
+                                            @nuevaSancion.StatusFineAmount
+                                        </div>
+                                        <div>
+                                            <br />
+                                            <label class="form-label">Estado del pago</label>
+                                            <span class="badge bg-primary" style="cursor: pointer;" @onclick="() => CambiarEstadoPago(nuevaSancion)">
+                                                @nuevaSancion.StatusFineAmount
+                                            </span>
+                                            <ValidationMessage For="@(() =>nuevaSancion.StatusFineAmount)" />
+                                        </div>
+                                    </div>
+                                    
+
+                                </div>
+                                
+                                    
+                            }
+
+                            <div class="mb-3">
+                                <label class="form-label">Motivo</label>
+                                <InputText class="form-control" @bind-Value="nuevaSancion.Reason" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Estado</label>
+                                <span class="badge bg-primary" style="cursor: pointer;" @onclick="() => CambiarEstadoLibro(nuevaSancion)">
+                                    @nuevaSancion.Status
+                                </span>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button class="btn btn-primary" type="submit">@((esEdicion ? "Guardar Cambios" : "Guardar"))</button>
+                                <button class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                            </div>
+
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (modalSancionVisible)
+    {
+        <div class="modal show d-block modal-prestamo">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="">Detalles Sanción</h2>
+                        <button type="button" class="btn-close" style="filter: invert(1);" @onclick="CerrarModalSancion"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="loan-card">
+
+
+                            @if (sancionSeleccionado.Type == SanctionType.Tiempo)
+                            {
+                                <div class="alert alert-warning">
+                                    <p><strong>Restricción Activa:</strong> Desde @sancionSeleccionado.StartDate?.ToString("dd/MM/yyyy") hasta @sancionSeleccionado.EndDate?.ToString("dd/MM/yyyy")</p>
+                                </div>
+                            }
+                            else if (sancionSeleccionado.Type == SanctionType.Monetario)
+                            {
+                                <div class="alert alert-info">
+                                    <p><strong>Monto a Pagar:</strong> $@sancionSeleccionado.FineAmount</p>
+                                    <p>
+                                        <strong>Estado del Pago:</strong>
+                                        <span class="badge @(sancionSeleccionado.StatusFineAmount == StatusAmount.Pagado ? "bg-success" : "bg-danger")">
+                                            @(sancionSeleccionado.StatusFineAmount == StatusAmount.Pagado ? "Pagado" : "Pendiente")
+                                        </span>
+                                    </p>
+                                </div>
+                            }
+
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CerrarModalSancion">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+
+
+@code {
+    private IEnumerable<Sanction> sanctions;
+    private IEnumerable<Sanction> filteredSanctions;
+    private IEnumerable<Sanction> Global; // Lista filtrada para buscar
+    private Sanction nuevaSancion = new Sanction();
+    private bool mostrarModal = false;
+    private bool esEdicion = false;
+    private string busqueda = "";
+    private string ordenPor = "Activo"; // Orden por defecto
+
+    [Parameter]
+    public int? id { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string idPerson { get; set; }
+
+    private IEnumerable<Person> allPersons;
+    private IEnumerable<Person> filteredPersons;
+
+    private IEnumerable<Loan> allLoans;
+    private IEnumerable<Loan> filteredLoans;
+
+    private IEnumerable<Sanction> allDetailsSanctions;
+    private IEnumerable<Sanction> filteredDetails;
+
+    private Sanction sancionSeleccionado;
+    private bool modalSancionVisible = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarSanciones();
+        await CargarPersonas();
+        await CargarPrestamos();
+        nuevaSancion.StartDate = DateTime.Now;
+
+        // Si el id de la ruta no es nulo, abrir el modal y asignar LoanId
+        if (id.HasValue && idPerson != null)
+        {
+            nuevaSancion = new Sanction
+            {
+                LoanId = id.Value,
+                PersonId = idPerson
+
+            };
+            // Asigna el ID de la URL al input de búsqueda
+            loanSearch = id.Value;
+            personSearch = idPerson;
+            mostrarModal = true;
+
+        }
+    }
+
+    private async Task CargarSanciones()
+    {
+        sanctions = await SanctionService.GetAllAsync();
+        Global = sanctions;
+        filteredSanctions = Global;
+    }
+
+    private async Task CargarPersonas()
+    {
+        allPersons = await PersonService.GetAllAsync();
+        filteredPersons = allPersons;
+    }
+
+    private async Task CargarPrestamos()
+    {
+        allLoans = await LoanService.GetAllAsync();
+        filteredLoans = allLoans;
+    }
+
+    private void MostrarModal()
+    {
+        nuevaSancion = new Sanction();
+        esEdicion = false;
+        mostrarModal = true;
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+    }
+
+    private async Task VerDetallesSancion(Sanction sanction, int santionID)
+    {
+        sancionSeleccionado = sanction;
+        modalSancionVisible = true;
+
+        allDetailsSanctions = new List<Sanction> { await SanctionService.GetByIdAsync(santionID) };
+        filteredDetails = allDetailsSanctions;
+    }
+
+    private void CerrarModalSancion()
+    {
+        modalSancionVisible = false;
+        sancionSeleccionado = null;
+    }
+
+    private async Task GuardarSancion()
+    {
+        if (!esEdicion && sanctions.Any(s => s.Id_Sanction == nuevaSancion.Id_Sanction))
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "El ID de la sanción ya existe. Introduzca un ID diferente.");
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(nuevaSancion.Reason) && nuevaSancion.StartDate != default)
+        {
+            if (esEdicion)
+            {
+                await SanctionService.UpdateSanctionAsync(nuevaSancion);
+            }
+            else
+            {
+                await SanctionService.AddSanctionAsync(nuevaSancion);
+            }
+            await CargarSanciones();
+            CerrarModal();
+        }
+        else
+        {
+            Console.WriteLine("Datos incompletos o inválidos.");
+        }
+    }
+
+    private async Task EditarSancion(int id)
+    {
+        var sanction = await SanctionService.GetByIdAsync(id);
+        if (sanction != null)
+        {
+            nuevaSancion = sanction;
+            esEdicion = true;
+            mostrarModal = true;
+        }
+    }
+
+    private async Task EliminarSancion(int id)
+    {
+        // Obtener la sanción antes de eliminarla
+        var sancion = await SanctionService.GetByIdAsync(id);
+
+        if (sancion == null)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Error: La sanción no existe.");
+            return;
+        }
+
+        // Obtener la fecha actual
+        DateTime fechaActual = DateTime.Now;
+
+        // Verificar si la sanción sigue vigente
+        if (fechaActual < sancion.EndDate)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "No se puede eliminar la sanción porque aún está vigente.");
+            return;
+        }
+
+        // Confirmar la eliminación
+        var confirm = await JsRuntime.InvokeAsync<bool>("confirm", "¿Está seguro de que desea eliminar esta sanción?");
+        if (confirm)
+        {
+            await SanctionService.DeleteSanctionAsync(id);
+            await CargarSanciones();
+        }
+    }
+
+
+
+    private void FiltrarSanciones(ChangeEventArgs evt)
+    {
+        busqueda = evt.Value?.ToString() ?? string.Empty;
+        filteredSanctions = string.IsNullOrWhiteSpace(busqueda)
+            ? sanctions
+            : sanctions.Where(s =>
+                s.LoanId.ToString().Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+                s.PersonId.ToString().Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+                s.Person.FullName.ToString().Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+                s.Id_Sanction.ToString().Contains(busqueda, StringComparison.OrdinalIgnoreCase)
+
+            ).ToList();
+    }
+
+    private void OrdenarSanciones(ChangeEventArgs evt)
+    {
+        if (evt != null)
+        {
+            ordenPor = evt.Value.ToString();
+        }
+
+        switch (ordenPor)
+        {
+            case "Todos":
+                filteredSanctions = Global.OrderBy(a => a.Id_Sanction).ToList();
+                break;
+            case "Activo":
+                filteredSanctions = Global.Where(a => a.Status == Status.Activo).ToList();
+                break;
+            case "Inactivo":
+                filteredSanctions = Global.Where(a => a.Status == Status.Inactivo).ToList();
+                break;
+            case "Time":
+                filteredSanctions = Global.Where(a => a.Type == SanctionType.Tiempo).ToList();
+                break;
+            case "Money":
+                filteredSanctions = Global.Where(a => a.Type == SanctionType.Monetario).ToList();
+                break;
+            default:
+                break;
+        }
+    }
+
+    // DataList de personas
+    private string personSearch = "";
+    private bool mostrarLista = false;
+
+    private async void OcultarLista()
+    {
+        await Task.Delay(200); // Pequeño retraso para evitar que se oculte antes de hacer clic
+        mostrarLista = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void SeleccionarPersona(Person person)
+    {
+        personSearch = person.FullName;
+        nuevaSancion.PersonId = person.Id_Person;
+        mostrarLista = false;
+    }
+
+    private void MostrarLista()
+    {
+        mostrarLista = true;
+    }
+    private async Task OnAuthorInput(ChangeEventArgs e)
+    {
+        personSearch = e.Value?.ToString() ?? "";
+        if (string.IsNullOrWhiteSpace(personSearch))
+        {
+            filteredPersons = allPersons;
+        }
+        else
+        {
+            filteredPersons = allPersons.Where(p => p.FullName.Contains(personSearch, StringComparison.OrdinalIgnoreCase));
+        }
+
+        mostrarLista = true;
+    }
+
+    // DataList de Prestamos
+    private int loanSearch = 0;
+    private bool mostrarListaPrestamo = false;
+
+    private async void OcultarListaPrestamo()
+    {
+        await Task.Delay(200); // Pequeño retraso para evitar que se oculte antes de hacer clic
+        mostrarListaPrestamo = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void SeleccionarPrestamo(Loan loan)
+    {
+        loanSearch = loan.Id_Loan;
+        nuevaSancion.LoanId = loan.Id_Loan;
+        // Buscar la persona asociada al préstamo
+        var person = allPersons.FirstOrDefault(p => p.Id_Person == loan.PersonId);
+
+        if (person != null)
+        {
+            // Asignar el ID de la persona a la sanción
+            nuevaSancion.PersonId = person.Id_Person;
+        }
+        mostrarListaPrestamo = false;
+
+    }
+
+    private void MostrarListaPrestamo()
+    {
+        mostrarListaPrestamo = true;
+    }
+    private async Task OnLoanInput(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int result))
+        {
+            loanSearch = result;
+        }
+        else
+        {
+            loanSearch = 0; // O maneja el caso en que no sea un número válido
+        }
+
+        if (loanSearch == 0) // Si el usuario borró el input o ingresó algo inválido
+        {
+            filteredLoans = allLoans;
+        }
+        else
+        {
+            filteredLoans = allLoans.Where(l => l.Id_Loan.ToString().Contains(loanSearch.ToString(), StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        mostrarListaPrestamo = true;
+    }
+
+    private void CambiarEstadoLibro(Sanction sanction)
+    {
+        // Convertir el enum en una lista de valores
+        var estados = Enum.GetValues<Status>().ToList();
+
+        // Obtener la posición actual en la lista de estados
+        int index = estados.IndexOf(sanction.Status);
+
+        // Calcular el próximo estado (ciclo entre los valores del enum)
+        sanction.Status = estados[(index + 1) % estados.Count];
+    }
+
+    
+    private void CambiarEstadoPago(Sanction sanction)
+    {
+        // Convertir el enum en una lista de valores
+        var estados = Enum.GetValues<StatusAmount>().ToList();
+
+        // Obtener la posición actual en la lista de estados
+        int index = estados.IndexOf(sanction.StatusFineAmount);
+
+        // Calcular el próximo estado (ciclo entre los valores del enum)
+        sanction.StatusFineAmount = estados[(index + 1) % estados.Count];
+    }
+}
+
+

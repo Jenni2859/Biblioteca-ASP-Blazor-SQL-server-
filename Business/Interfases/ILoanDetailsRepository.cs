@@ -1,4 +1,5 @@
 ﻿using Biblioteca.Data.Models;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -11,5 +12,7 @@ namespace Biblioteca.Business.Interfases
         Task<IEnumerable<LoanDetails>> GetAllAsync();
         Task<LoanDetails> GetByIdAsync(int id);
         Task UpdateLoanDetailAsync(LoanDetails loanDetails);
+
+        Task<IEnumerable<LoanDetails>> GetByLoanIdAsync(int loanId);
     }
 }

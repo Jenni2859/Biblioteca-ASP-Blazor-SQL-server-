@@ -56,11 +56,12 @@
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title text-dark">@book.Title</h5>
                             <p class="card-text"><strong>ID:</strong> @book.Id_Book</p>
-                            <p class="card-text"><strong>Páginas:</strong> @book.Pages</p>
-                            <p class="card-text"><strong>Precio:</strong> @book.Price.ToString("C")</p>
-                            <p class="card-text"><strong>Fecha de Edición:</strong> @book.Edition_Date.ToShortDateString()</p>
                             <p class="card-text"><strong>Autor:</strong> @book.Author?.Name</p>
+                            <p class="card-text"><strong>Categoría:</strong> @book.Category?.Name</p>
+                            <p class="card-text"><strong>Fecha de Edición:</strong> @book.Edition_Date.ToShortDateString()</p>
+                            <p class="card-text"><strong>Páginas:</strong> @book.Pages</p>
                             <p class="card-text"><strong>Stock:</strong> @book.Stock</p>
+                            <p class="card-text"><strong>Precio:</strong> @book.Price.ToString("C")</p>
                             <div class="d-flex justify-content-between mt-auto">
                                 <button class="btn btn-primary btn-sm" @onclick="() => EditarLibro(book.Id_Book)">
                                     <i class="fas fa-edit"></i> Editar

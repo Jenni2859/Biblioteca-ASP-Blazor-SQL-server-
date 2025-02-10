@@ -1,0 +1,716 @@
+﻿@page "/listLoans"
+
+@using Biblioteca.Business.Interfaces
+@using Biblioteca.Data.Models
+@using Biblioteca.Business.Interfases
+@using System.ComponentModel.DataAnnotations
+@inject IJSRuntime JsRuntime
+@inject ILoanRepository LoanService
+@inject IPersonRepository PersonService
+@inject ILoanDetailsRepository DetailsLoanService
+@inject IBookRepository BookService
+
+
+
+<!-- Agregar Font Awesome para los iconos -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<div class="container mt-4">
+    <h3 class="text-center mb-4">Gestión de Préstamos</h3>
+
+    <!-- Campo de búsqueda -->
+    <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Buscar préstamo..." @oninput="FiltrarPrestamos" />
+    </div>
+
+    <!--  Campo para agregar -->
+    <div class="text-end mb-3">
+        <button class="btn btn-add" @onclick="MostrarModal">
+            <i class="fas fa-plus"></i> Agregar Préstamo
+        </button>
+    </div>
+
+    <!-- Contenedor de "Ordenar por" alineado a la derecha -->
+    <div class="mb-3 d-flex justify-content-end align-items-center sort-container">
+        <select id="orderBy" class="form-select" @onchange="OrdenarPrestamos">
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+        </select>
+    </div>
+
+    @if (loans == null)
+    {
+        <p class="text-center">Cargando préstamos...</p>
+    }
+    else if (!loans.Any())
+    {
+        <p class="text-center">No hay préstamos disponibles.</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var loan in filteredLoans)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-auto shadow-sm border-0" style="background-color: #f9f9f9; width: 20rem; border-radius: 10px;">
+                        <img src="https://colegioprincesasofia.es/wp-content/uploads/2022/06/LIBRO.gif"
+                        class="card-img-top img-hover"
+                        alt="Foto de @loan.Id_Loan"
+                        style="height: 200px; object-fit: cover; border-top-left-radius: 10px; border-top-right-radius: 10px;"
+                        title="Haz clic para más información"
+                        @onclick="() => VerDetallesPrestamo(loan, loan.Id_Loan)" />
+
+                        <div class="card-body d-flex flex-column" style="color: #333;">
+                            <h5 class="card-title text-dark">@loan.Id_Loan</h5>
+
+                            <p><strong>Persona:</strong> @loan.Person.FullName</p>
+
+                            <p>
+                                <strong>Devolución:</strong>
+                                @if (loan.LoanDetail.Any(ld => ld.Status == BookLoanStatus.Devuelto))
+                                {
+                                    <span>Entregado</span> <!-- Si al menos un libro tiene el estado "Devuelto", mostramos "Entregado" -->
+                                }
+                                else
+                                {
+                                    <span>@(loan.ActualReturnDate?.ToString("dd/MM/yyyy") ?? "No devuelto")</span>
+                                }
+                            </p>
+
+                            <p><strong>Total de Libros:</strong> @loan.LoanDetail.Count()</p>
+
+                            @* <p><strong>Sanciones:</strong> @(loan.Sanctions.Count() > 0 ? loan.Sanctions.Count() + " sanción(es)" : "Sin sanciones")</p> *@
+
+                            <div class="d-flex justify-content-between mt-4">
+
+
+                                <button class="btn btn-warning btn-sm fw-bold">
+                                    <a href=@($"/listSanctions/{loan.Id_Loan}?idPerson={loan.PersonId}") class="link-sanction btn-sm fw-bold">
+                                        <i class="fa-solid fa-hand" style="color: #ffffff;"></i> Sanción
+                                    </a>
+                                </button>
+
+                                <button class="btn btn-primary btn-sm fw-bold" @onclick="() => EditarPrestamo(loan.Id_Loan)">
+                                    <i class="fas fa-edit" ></i> Editar
+                                </button>
+
+                                <button class="btn btn-danger btn-sm fw-bold" @onclick="() => EliminarPrestamo(loan.Id_Loan)">
+                                    <i class="fas fa-trash-alt"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Modal -->
+    @if (mostrarModal)
+    {
+        <div class="modal show d-block" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@((esEdicion ? "Editar Préstamo" : "Agregar Préstamo"))</h5>
+                        <button type="button" class="btn-close" @onclick="CerrarModal" style="filter: invert(1);"></button>
+                    </div>
+                    <div class="modal-body">
+                        <EditForm Model="nuevoLoan" OnValidSubmit="GuardarPrestamo">
+                            <DataAnnotationsValidator />
+
+                            <div class="mb-3">
+                                <!-- Campo de búsqueda con lista personalizada -->
+                                <div class="position-relative mt-1">
+                                    <label>Nombre de la persona:</label>
+                                    <input type="text" class="form-control" placeholder="Escriba para buscar..."
+                                    @bind="personSearch"
+                                    @oninput="OnAuthorInput"
+                                    @onfocus="MostrarLista"
+                                    @onblur="OcultarLista"
+                                    disabled="@esEdicion" />
+                                    <ValidationMessage For="@(() => nuevoLoan.PersonId)" />
+
+                                    <div class="dropdown-menu show" style="width: 100%; display: @(mostrarLista ? "block" : "none");" id="dropdownAutores">
+                                        @if (filteredPersons.Any())
+                                        {
+                                            @foreach (var person in filteredPersons)
+                                            {
+                                                <button type="button"
+                                                class="dropdown-item @(person.FullName.Equals(personSearch, StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+                                                @onclick="() => SeleccionarPersona(person)">
+                                                    @person.FullName
+                                                </button>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="dropdown-item disabled">No se encontraron resultados</button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="loanDate" class="form-label">Fecha de Préstamo</label>
+                                <input type="date" id="loanDate" class="form-control" @bind="nuevoLoan.LoanDate" required disabled="esEdicion" />
+                                <ValidationMessage For="@(() => nuevoLoan.LoanDate)" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="returnDate" class="form-label">Fecha de Devolución</label>
+                                <input type="date" id="returnDate" class="form-control" @bind="nuevoLoan.ReturnDate" required disabled="@esEdicion" />
+                                <ValidationMessage For="@(() => nuevoLoan.ReturnDate)" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Estado</label>
+                                <select id="status" class="form-control" @bind="nuevoLoan.Status" disabled="@esEdicion">
+                                    <option value="Activo">Activo</option>
+                                    <option value="Inactivo">Inactivo</option>
+                                </select>
+                                <ValidationMessage For="@(() => nuevoLoan.Status)" />
+                            </div>
+
+                            <!-- Selección de libros -->
+                            <div class="mb-3">
+                                <label class="form-label">Seleccionar Libros</label>
+                                <!-- Campo de búsqueda con lista personalizada -->
+                                <div class="position-relative mt-1">
+                                    <label>Libros:</label>
+                                    <input type="text" class="form-control" placeholder="Escriba para buscar..."
+                                    @bind="bookSearch"
+                                    @oninput="OnBookInput"
+                                    @onfocus="MostrarLibros"
+                                    @onblur="OcultarLibros" disabled="@esEdicion" />
+                                    <ValidationMessage For="@(() => nuevoDetalle.BookId)"  />
+
+                                    <div class="dropdown-menu show" style="width: 100%; display: @(mostrarLibros ? "block" : "none");" id="dropdownAutores">
+                                        @if (filteredBooks.Any())
+                                        {
+                                            @foreach (var books in filteredBooks)
+                                            {
+                                                <button type="button"
+                                                class="dropdown-item @(books.Title.Equals(bookSearch, StringComparison.OrdinalIgnoreCase))"
+                                                @onclick="() => SeleccionarLibros(books)">
+                                                    @books.Title
+                                                </button>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="dropdown-item disabled">No se encontraron resultados</button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Libros Seleccionados:</label>
+                                <ul class="list-group">
+                                    @if (!esEdicion)
+                                    {
+                                        @foreach (var libro in librosSeleccionados)
+                                        {
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span>@libro.Title</span>
+                                                <!-- Cambia el estado al hacer clic -->
+                                                <span class="badge bg-primary" style="cursor: pointer;">
+                                                    @libro.Status
+                                                </span>
+
+                                                <button type="button" class="btn btn-danger btn-sm" @onclick="() => RemoverLibro(libro.Id_Book)">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </li>
+                                        }
+                                    }
+                                    else{
+                                        @foreach (var libro in nuevoLoan.LoanDetail)
+                                        {
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span>@libro.Book.Title</span>
+                                                <!-- Cambia el estado al hacer clic -->
+                                                <span class="badge bg-primary" style="cursor: pointer;" @onclick="() => CambiarEstadoLibro(libro)">
+                                                    @libro.Status
+                                                </span>
+
+                                                <button type="button" class="btn btn-danger btn-sm" @onclick="() => RemoverLibroEdicion(libro.Book.Id_Book)">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </li>
+                                        }
+                                    }
+
+                                </ul>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button class="btn btn-primary" type="submit">@((esEdicion ? "Guardar Cambios" : "Guardar"))</button>
+                                <button class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (modalPrestamoVisible)
+    {
+        <div class="modal show d-block modal-prestamo">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="">Detalles Prestamo</h2>
+                        <button type="button" class="btn-close" style="filter: invert(1);" @onclick="CerrarModalPrestamo"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="loan-card">
+                            <!--Parte del prestamo -->
+                            <p><strong>@loanSeleccionado.Person.PersonType:</strong> @loanSeleccionado.Person.FullName</p>
+                            <p><strong>Fecha de Préstamo:</strong> @loanSeleccionado.LoanDate.ToString("dd/MM/yyyy")</p>
+                            <p><strong>Fecha de Devolución:</strong> @loanSeleccionado.ReturnDate.ToString("dd/MM/yyyy")</p>
+                            <p class="loan-detail"><strong>Estado:</strong> @loanSeleccionado.Status</p>
+
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID Libro</th>
+                                        <th>Título</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var details in filteredDetails)
+                                    {
+                                        <tr>
+                                            <td>@details.BookId</td>
+                                            <td>@details.Book.Title</td>
+                                            <td>
+                                                <!-- Cambia el estado al hacer clic -->
+                                                <span class="badge bg-primary" style="cursor: pointer;">
+                                                    @details.Status
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CerrarModalPrestamo">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (mostrarModalAdvertencia)
+    {
+        <div class="modal show d-block" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Límite de Préstamos Alcanzado</h5>
+                        <button type="button" class="btn-close" @onclick="CerrarModalAdvertencia" style="filter: invert(1);"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>@mensajeAdvertencia</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" @onclick="CerrarModalAdvertencia">Entendido</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+
+
+</div>
+
+@code {
+    private IEnumerable<Loan> loans;
+    private IEnumerable<Loan> filteredLoans; // Lista filtrada
+    private IEnumerable<Loan> Global; // Lista filtrada para buscar
+    private string searchTerm = string.Empty;   // Término de búsqueda
+    private Loan nuevoLoan = new Loan();
+    private LoanDetails nuevoDetalle = new LoanDetails();
+    private bool mostrarModal = false;
+    private bool esEdicion = false;
+    private string ordenPor = "Activo"; // Orden por defecto
+
+    private IEnumerable<Person> allPersons;
+    private IEnumerable<Person> filteredPersons;
+
+    private IEnumerable<Book> allBooks;
+    private IEnumerable<Book> filteredBooks;
+    private List<Book> librosSeleccionados = new();
+
+    private IEnumerable<LoanDetails> allDetailsLoan;
+    private IEnumerable<LoanDetails> filteredDetails;
+    private List<LoanDetails> detallesPrestamo = new List<LoanDetails>();
+
+    private bool mostrarModalAdvertencia = false;
+    private string mensajeAdvertencia = "";
+
+
+
+
+    private Loan loanSeleccionado;
+    private bool modalPrestamoVisible = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarPrestamos();
+        await CargarPersonas();
+        await CargarLibros();
+    }
+
+    private async Task CargarPrestamos()
+    {
+        loans = await LoanService.GetAllAsync();
+        Global = loans;
+        filteredLoans = loans; // Inicialmente muestra todos los préstamos
+        OrdenarPrestamos(null);
+        allDetailsLoan = await DetailsLoanService.GetAllAsync();
+        filteredDetails = allDetailsLoan;
+    }
+
+    private async Task CargarPersonas()
+    {
+        allPersons = await PersonService.GetAllAsync();
+        filteredPersons = allPersons;  // Inicialmente muestra todos los IDs
+    }
+
+    private async Task CargarLibros()
+    {
+        allBooks = await BookService.GetAlLAsync();
+        filteredBooks = allBooks; // Inicialmente muestra todos los IDs
+    }
+
+    private void FiltrarPrestamos(ChangeEventArgs evt)
+    {
+        searchTerm = evt.Value.ToString();
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            Global = loans; // Si no hay búsqueda, muestra todos los préstamos
+        }
+        else
+        {
+            Global = loans.Where(a =>
+            a.PersonId.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+            a.LoanDate.ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+            a.Id_Loan.ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+        }
+
+        OrdenarPrestamos(null);
+    }
+
+    private void FiltrarPersonas(ChangeEventArgs evt)
+    {
+        // var searchTerm = evt.Value.ToString();
+        // filteredPersons = string.IsNullOrWhiteSpace(searchTerm)
+        //     ? allPersons
+        //     : allPersons.Where(p => p.FullName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+
+    private void OrdenarPrestamos(ChangeEventArgs evt)
+    {
+        if (evt != null)
+        {
+            ordenPor = evt.Value.ToString();
+        }
+
+        switch (ordenPor)
+        {
+            case "Activo":
+                filteredLoans = Global.Where(a => a.Status == Status.Activo).ToList();
+                break;
+            case "Inactivo":
+                filteredLoans = Global.Where(a => a.Status == Status.Inactivo).ToList();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void MostrarModal()
+    {
+        esEdicion = false;
+        nuevoLoan = new Loan(); // Resetea el formulario
+        mostrarModal = true;
+        personSearch = "";
+    }
+
+    private async Task VerDetallesPrestamo(Loan loan, int loanID)
+    {
+        loanSeleccionado = loan;
+        modalPrestamoVisible = true;
+
+
+        allDetailsLoan = await DetailsLoanService.GetByLoanIdAsync(loanID);
+        filteredDetails = allDetailsLoan;
+    }
+
+    private void CerrarModalPrestamo()
+    {
+        modalPrestamoVisible = false;
+        loanSeleccionado = null;
+    }
+
+    private async Task EditarPrestamo(int idLoan)
+    {
+        var loan = await LoanService.GetByIdAsync(idLoan);
+
+        if (loan != null)
+        {
+            nuevoLoan = loan;
+            esEdicion = true;
+            mostrarModal = true;
+            personSearch = loan.Person.FullName;
+
+            // Limpiar la lista y agregar los libros asociados al préstamo
+            librosSeleccionados = loan.LoanDetail.Select(d =>
+                {
+                    return d.Book;
+
+                }).ToList();
+        }
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+    }
+
+    private async Task GuardarPrestamo()
+    {
+        if (nuevoLoan == null)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Los datos del préstamo no son válidos.");
+            return;
+        }
+
+        // Validación: evitar duplicados si no es edición
+        if (!esEdicion && loans.Any(a => a.Id_Loan == nuevoLoan.Id_Loan))
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "El ID del préstamo ya existe. Introduzca un ID diferente.");
+            return;
+        }
+
+        // Validación de campos obligatorios
+        if (string.IsNullOrWhiteSpace(nuevoLoan.PersonId) ||
+            nuevoLoan.LoanDate == DateTime.MinValue ||
+            nuevoLoan.ReturnDate == DateTime.MinValue)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Debe completar todos los campos obligatorios.");
+            return;
+        }
+
+        // Guardar o actualizar el préstamo
+        if (esEdicion)
+        {
+            //await LoanService.UpdateLoanAsync(nuevoLoan);
+
+            // Actualizar cada detalle
+            foreach (var detalle in nuevoLoan.LoanDetail)
+            {
+                await DetailsLoanService.UpdateLoanDetailAsync(detalle);
+            }
+        }
+        else
+        {
+            await LoanService.AddLoanAsync(nuevoLoan);
+
+            // Asignar el ID del préstamo a cada detalle antes de guardarlos
+            foreach (var detalle in detallesPrestamo)
+            {
+                detalle.LoanId = nuevoLoan.Id_Loan;
+                await DetailsLoanService.AddLoanDetailAsync(detalle);
+            }
+        }
+
+        // Recargar préstamos y cerrar modal
+        await CargarPrestamos();
+        detallesPrestamo.Clear(); // Limpiar la lista después de guardar
+        CerrarModal();
+    }
+
+
+    private async Task EliminarPrestamo(int idLoan)
+    {
+        var confirm = await JsRuntime.InvokeAsync<bool>("confirm", $"¿Estás seguro de que deseas eliminar este préstamo?");
+        if (confirm)
+        {
+            await LoanService.DeleteLoanAsync(idLoan);
+            await CargarPrestamos(); // Recarga los préstamos después de eliminar uno
+        }
+    }
+
+    // DataList de personas
+    private string personSearch = "";
+    private bool mostrarLista = false;
+
+    private async void OcultarLista()
+    {
+        await Task.Delay(200); // Pequeño retraso para evitar que se oculte antes de hacer clic
+        mostrarLista = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void SeleccionarPersona(Person person)
+    {
+        personSearch = person.FullName;
+        //nuevoLoan.PersonId = person.Id_Person;
+        //mostrarLista = false;
+
+        // Asignar la persona seleccionada
+        nuevoLoan.Person = person;
+        nuevoLoan.PersonId = person.Id_Person;
+
+        // Validar el límite de libros según el tipo de persona
+        int librosPendientes = loans
+            .Where(l => l.PersonId == person.Id_Person)
+            .SelectMany(l => l.LoanDetail)
+            .Count(ld => ld.Status == BookLoanStatus.Pendiente);
+
+        Console.WriteLine(librosPendientes);
+
+        // Definir el límite según el tipo de persona
+        int limiteLibros = person.PersonType switch
+        {
+            PersonType.Estudiante => 2,
+            PersonType.Profesor => 5,
+            PersonType.Otro => 3,
+            _ => throw new ArgumentOutOfRangeException("El tipo de persona no es válido.")
+        };
+
+        // Verificar si la persona ha alcanzado el límite
+        if (librosPendientes >= limiteLibros)
+        {
+            mensajeAdvertencia = $"El usuario {person.FullName} ya tiene {librosPendientes} libros en préstamo y ha alcanzado el límite permitido. Debe devolver al menos un libro antes de solicitar otro.";
+            mostrarModalAdvertencia = true;
+        }
+        else
+        {
+            // Proceder con el préstamo si no ha alcanzado el límite
+            mostrarModalAdvertencia = false;
+        }
+
+        // Cerrar la lista de búsqueda después de seleccionar
+        mostrarLista = false;
+    }
+
+    private void MostrarLista()
+    {
+        mostrarLista = true;
+    }
+    private async Task OnAuthorInput(ChangeEventArgs e)
+    {
+        personSearch = e.Value?.ToString() ?? "";
+        if (string.IsNullOrWhiteSpace(personSearch))
+        {
+            filteredPersons = allPersons;
+        }
+        else
+        {
+            filteredPersons = allPersons.Where(p => p.FullName.Contains(personSearch,StringComparison.OrdinalIgnoreCase));
+        }
+
+        mostrarLista = true;
+    }
+
+    private void CerrarModalAdvertencia()
+    {
+        mostrarModalAdvertencia = false;
+        CerrarModal();
+    }
+
+
+    // DataList de Libros
+    private string bookSearch = "";
+    private bool mostrarLibros = false;
+
+    private async void OcultarLibros()
+    {
+        await Task.Delay(200); // Pequeño retraso para evitar que se oculte antes de hacer clic
+        mostrarLibros = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void SeleccionarLibros(Book book)
+    {
+        bookSearch = book.Title;
+        mostrarLibros = false;
+
+        // Verifica si el libro ya está seleccionado
+        if (!librosSeleccionados.Any(l => l.Id_Book == book.Id_Book))
+        {
+            librosSeleccionados.Add(book);
+
+            // Agrega un nuevo detalle del préstamo para este libro
+            detallesPrestamo.Add(new LoanDetails
+                {
+                    LoanId = nuevoLoan.Id_Loan,  // Se asigna después de guardar el préstamo
+                    BookId = book.Id_Book
+                });
+        }
+    }
+
+
+    private void MostrarLibros()
+    {
+        mostrarLibros = true;
+    }
+    private async Task OnBookInput(ChangeEventArgs e)
+    {
+        bookSearch = e.Value?.ToString() ?? "";
+        if (string.IsNullOrWhiteSpace(bookSearch))
+        {
+            filteredBooks = allBooks;
+        }
+        else
+        {
+            filteredBooks = allBooks.Where(p => p.Title.Contains(bookSearch, StringComparison.OrdinalIgnoreCase));
+        }
+
+        mostrarLibros = true;
+    }
+    
+    // Funcion para eliminar un libro de seleccionados
+    private void RemoverLibro(string bookId)
+    {
+        var libro = librosSeleccionados.FirstOrDefault(l => l.Id_Book == bookId);
+        if (libro != null)
+        {
+            librosSeleccionados.Remove(libro);
+        }
+    }
+
+    private void RemoverLibroEdicion(string bookId) 
+    {
+
+    }
+
+
+    private void CambiarEstadoLibro(LoanDetails detalles)
+    {
+        // Convertir el enum en una lista de valores
+        var estados = Enum.GetValues<BookLoanStatus>().ToList();
+
+        // Obtener la posición actual en la lista de estados
+        int index = estados.IndexOf(detalles.Status);
+
+        // Calcular el próximo estado (ciclo entre los valores del enum)
+        detalles.Status = estados[(index + 1) % estados.Count];
+    }
+
+    
+}

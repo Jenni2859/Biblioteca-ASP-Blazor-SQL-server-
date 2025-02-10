@@ -319,7 +319,7 @@
         }
         else
         {
-            var confirm = await JsRuntime.InvokeAsync<bool>("confirm", $"¿Estás seguro de que deseas eliminar este autor?");
+            var confirm = await JsRuntime.InvokeAsync<bool>("confirm", $"¿Estás seguro de que deseas eliminar este autor: {idAuthor}?");
             if (confirm)
             {
                 await AuthorService.DeleteAuthorAsync(idAuthor);
