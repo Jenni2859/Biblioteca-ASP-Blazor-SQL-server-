@@ -1,10 +1,13 @@
 ﻿using Biblioteca.Data.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Biblioteca.Data
 {
-    public class AppDbContext: DbContext
+    public class AppDbContext: IdentityDbContext<IdentityUser>
     {
+
         // DbSets para las entidades
         public DbSet<User> Users { get; set; }
         public DbSet<AuthorBook> AuthorBooks { get; set; }
@@ -19,8 +22,9 @@ namespace Biblioteca.Data
 
         public AppDbContext(DbContextOptions<AppDbContext> options):base(options) { }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void  OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             // Configurar AuthorBook como una entidad sin clave
             modelBuilder.Entity<AuthorBook>().HasNoKey();
 

@@ -20,6 +20,8 @@ h3 {
     margin-bottom: 30px;
 }
 
+
+
 /* Búsqueda */
 input.form-control {
     border-radius: 25px;
@@ -338,3 +340,4 @@ button.btn-addd {
     .btn-close:hover {
         color: #495057;
     }
+

@@ -53,7 +53,16 @@ namespace Biblioteca.Business.Repositories
             var existing = await _context.Books.FindAsync(book.Id_Book);
             if (existing != null)
             {
-                _context.Books.Update(book);
+                existing.Id_Book = book.Id_Book;
+                existing.Title = book.Title;
+                existing.Price = book.Price;
+                existing.Edition_Date = book.Edition_Date;
+                existing.Stock = book.Stock;
+                existing.Id_Author = book.Id_Author;
+                existing.CategoryId = book.CategoryId;
+                existing.Status = book.Status;
+
+                _context.Books.Update(existing);
                 await _context.SaveChangesAsync();
             }
             

@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/home"
 
 @using Biblioteca.Business.Interfaces
 @using Biblioteca.Business.Interfases
@@ -6,6 +6,7 @@
 @inject IAuthorRepository AuthorRepository
 @inject IPersonRepository PersonRepository
 @inject ILoanRepository LoanRepository
+@rendermode InteractiveServer
 
 @inject IJSRuntime JS
 
@@ -15,10 +16,8 @@
 <!-- Enlace a la fuente de Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="js/site.js"></script> <!-- Asegúrate de que está en la carpeta correcta -->
-
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> @* Estilos del grafico *@
+<script src="/js/site.js"></script> 
 
 
 <h3>Biblioteca</h3>
@@ -45,7 +44,7 @@
         }
     </div>
 
-    
+
 </div>
 
 @code {
@@ -73,13 +72,14 @@
                                     Stock = book.Stock
                                 }).ToList();
 
-        // ✅ Asignamos valores
+        // Asignamos valores
         TotalBooks = books.Count();
         TotalAuthors = authors.Count();
         TotalPersons = persons.Count();
         TotalLoans = loans.Count();
 
-        // ✅ Forzamos renderizado para que los datos se actualicen en la UI
+
+        // Forzamos renderizado para que los datos se actualicen en la UI
         await InvokeAsync(StateHasChanged);
     }
 
@@ -91,7 +91,7 @@
             // Esperamos 100ms para asegurarnos de que la UI ya se actualizó
             await Task.Delay(100);
 
-            if (TotalBooks > 0) // ✅ Solo llamamos la función si hay datos cargados
+            if (TotalBooks > 0) // Solo llamamos la función si hay datos cargados
             {
                 await JS.InvokeVoidAsync("renderLibraryChart", TotalBooks, TotalAuthors, TotalPersons, TotalLoans);
             }
