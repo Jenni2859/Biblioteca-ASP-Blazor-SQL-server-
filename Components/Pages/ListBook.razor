@@ -34,7 +34,7 @@
     <div class="mb-3 d-flex justify-content-end align-items-center sort-container">
         <select id="orderBy" class="form-select" @onchange="OrdenarLibros">
             <option value="Nombre">Orden Alfabético</option>
-            <option value="Cedula">Por Cédula</option>
+            <option value="Id">ID</option>
             <option value="Activo">Activo</option>
             <option value="Inactivo">Inactivo</option>
         </select>
@@ -164,11 +164,13 @@
     private IEnumerable<Book> books;
     private IEnumerable<Author> authors;
     private IEnumerable<Book> filteredBooks;
+    private IEnumerable<Book> Global;
     private IEnumerable<Category> categories;
     private Book nuevoLibro = new Book();
     private bool mostrarModal = false;
     private bool esEdicion = false;
     private string busqueda = "";
+    private string ordenPor = "Activo";
 
     protected override async Task OnInitializedAsync()
     {
@@ -181,6 +183,7 @@
     private async Task CargarLibros()
     {
         books = await BookService.GetAlLAsync();
+        Global = books;
         filteredBooks = books;
     }
 
@@ -286,16 +289,16 @@
         switch (criterio)
         {
             case "Nombre":
-                filteredBooks = filteredBooks.OrderBy(b => b.Title);
+                filteredBooks = Global.OrderBy(b => b.Title);
                 break;
-            case "Cedula":
-                filteredBooks = filteredBooks.OrderBy(b => b.Id_Book);
+            case "Id":
+                filteredBooks = Global.OrderBy(b => b.Id_Book);
                 break;
             case "Activo":
-                filteredBooks = filteredBooks.OrderBy(b => b.Stock > 0); // Ejemplo de criterio activo/inactivo
+                filteredBooks = Global.Where(a => a.Status == Status.Activo).ToList(); // Ejemplo de criterio activo/inactivo
                 break;
             case "Inactivo":
-                filteredBooks = filteredBooks.OrderBy(b => b.Stock == 0); // Ejemplo de criterio activo/inactivo
+                filteredBooks = Global.Where(a => a.Status == Status.Inactivo).ToList(); // Ejemplo de criterio activo/inactivo
                 break;
         }
     }

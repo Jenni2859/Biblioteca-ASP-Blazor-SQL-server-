@@ -59,8 +59,16 @@ namespace Biblioteca.Business.Repositories
 
         public async Task UpdateLoanDetailAsync(LoanDetails loanDetails)
         {
-            _context.LoanDetails.Update(loanDetails);
-            await _context.SaveChangesAsync();
+            var existing = await _context.LoanDetails.FindAsync(loanDetails.Id_LoanDetail);
+            if (existing != null)
+            {
+                existing.LoanId = loanDetails.LoanId;
+                existing.BookId = loanDetails.BookId;
+                existing.Status = loanDetails.Status;
+                _context.LoanDetails.Update(existing);
+                await _context.SaveChangesAsync();
+            }
+            
         }
 
         public async Task<IEnumerable<LoanDetails>> GetByLoanIdAsync(int loanId)

@@ -61,6 +61,7 @@ namespace Biblioteca.Business.Repositories
                 existing.Id_Author = book.Id_Author;
                 existing.CategoryId = book.CategoryId;
                 existing.Status = book.Status;
+                existing.Pages = book.Pages;
 
                 _context.Books.Update(existing);
                 await _context.SaveChangesAsync();

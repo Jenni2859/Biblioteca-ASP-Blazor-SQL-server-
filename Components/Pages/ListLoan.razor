@@ -234,7 +234,6 @@
                                                 <span>@libro.Book.Title</span>
                                                 <!-- Cambia el estado al hacer clic -->
                                                 <span class="badge bg-primary" style="cursor: pointer;" @onclick="() => CambiarEstadoLibro(libro)">
-                                                    @libro.Status
                                                 </span>
 
                                                 <button type="button" class="btn btn-danger btn-sm" @onclick="() => RemoverLibroEdicion(libro.Book.Id_Book)">
@@ -519,7 +518,6 @@
         if (esEdicion)
         {
             //await LoanService.UpdateLoanAsync(nuevoLoan);
-
             // Actualizar cada detalle
             foreach (var detalle in nuevoLoan.LoanDetail)
             {
@@ -528,6 +526,9 @@
         }
         else
         {
+            nuevoLoan.PersonId = nuevoLoan.Person.Id_Person;
+            nuevoLoan.Person = null;
+
             await LoanService.AddLoanAsync(nuevoLoan);
 
             // Asignar el ID del préstamo a cada detalle antes de guardarlos
